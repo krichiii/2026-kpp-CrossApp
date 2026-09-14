@@ -7,7 +7,7 @@
  
 **Призначення**: облік залишків товарів по партіях
 
- ## Таблиця розмірів публікацій
+ ## Таблиця розмірів публікацій (+ Додаткові завдання 1,2 [lab02] )
 
 | RID | Режим | Додаткові режими Publish | Розмір publish | К-сть файлів | Потрібен runtime |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -19,6 +19,8 @@
 | linux-x64 | fw-dependent | SingleFile | 112 KiB | 3 | так(.NET 9.0) |
 | win-x64 | self-contained | SingleFile | 68 MiB | 3 | ні |
 | win-x64 | fw-dependent | SingleFile | 200 KiB | 3 | так(.NET 9.0) |
+| linux-x64 | self-contained | Trimmed | 23 MiB | 32 | ні |
+| win-x64 | self-contained | Trimmed | 20 MiB | 31 | ні |
 
  ## Структура проекту
 ```
