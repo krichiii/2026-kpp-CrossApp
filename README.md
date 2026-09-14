@@ -9,12 +9,16 @@
 
  ## Таблиця розмірів публікацій
 
-| RID | Режим | Розмір publish | Потрібен runtime |
-| :--- | :--- | :--- | :--- |
-| linux-x64 | self-contained | 77 МіБ | ні |
-| linux-x64 | framework-dependent | 124 KіБ | так |
-| win-x64 | self-contained | 75 МіБ | ні |
-| win-x64 | framework-dependent | 204 KiB | так |
+| RID | Режим | Додаткові режими Publish | Розмір publish | К-сть файлів | Потрібен runtime |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| linux-x64 | self-contained | - | 77 MiB | 191 | ні |
+| linux-x64 | fw-dependent | - | 124 KiB | 7 | так(.NET 9.0) |
+| win-x64 | self-contained | - | 75 MiB | 191 | ні |
+| win-x64 | fw-dependent | - | 204 KiB | 7 | так(.NET 9.0) |
+| linux-x64 | self-contained | SingleFile | 68 MiB | 3 | ні |
+| linux-x64 | fw-dependent | SingleFile | 112 KiB | 3 | так(.NET 9.0) |
+| win-x64 | self-contained | SingleFile | 68 MiB | 3 | ні |
+| win-x64 | fw-dependent | SingleFile | 200 KiB | 3 | так(.NET 9.0) |
 
  ## Структура проекту
 ```
