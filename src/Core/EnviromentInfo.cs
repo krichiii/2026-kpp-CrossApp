@@ -8,7 +8,8 @@ using System.Runtime.InteropServices;
     string ProcessArchitecture,
     string DetectedRid,
     string ReportedRid,
-    string BaseDirectory);
+    string BaseDirectory,
+    string BuildNote);
  public static class EnvironmentInfo {
     public static EnvironmentReport Collect() => new(
 
@@ -19,7 +20,21 @@ using System.Runtime.InteropServices;
     DetectRid(),
 
     RuntimeInformation.RuntimeIdentifier,
-    AppContext.BaseDirectory);
+    AppContext.BaseDirectory,
+    
+    BuildInfo()
+    );
+    
+      private static string BuildInfo()
+      {
+         #if NET9_0_OR_GREATER
+            return "збірка під net9.0";
+         
+         #else
+            return "збірка під net8.0";
+
+         #endif
+      }
 
     // Ручне визначення RID: показує, з чого складається рядок win-x64.
      private static string DetectRid() {
@@ -35,6 +50,7 @@ using System.Runtime.InteropServices;
             Architecture.Arm => "arm",
             _ => "unknown"
         };
-    return $"{os}-{arch}";
+
+        return $"{os}-{arch}";
     }
  }
