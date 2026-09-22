@@ -1,11 +1,7 @@
 using Core.Dto;
 using Core.Import;
 
-//string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample.csv");
-string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample-correct.csv");
-//string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample.json");
-//string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample-correct.json");
-//string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample-nonexist.csv");
+string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample.csv");
 
 if (!File.Exists(path))
 {
@@ -51,5 +47,8 @@ if (result.Errors.Count > 0)
     foreach (string e in result.Errors)
         Console.WriteLine($" ! {e}");
 }
+
+Console.WriteLine();
+Console.WriteLine($"Статистика імпорту: усього — {result.Total}, прийнято — {result.Accepted}, пропущено — {result.Skipped}, % помилок — {result.ErrorPercentage:F1}%");
  
 return 0;
