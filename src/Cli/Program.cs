@@ -2,8 +2,9 @@ using Core.Dto;
 using Core.Import;
 
 //string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample.csv");
-//string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample-correct.csv");
-string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample.json");
+string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample-correct.csv");
+//string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample.json");
+//string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample-correct.json");
 //string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample-nonexist.csv");
 
 if (!File.Exists(path))
@@ -12,28 +13,43 @@ if (!File.Exists(path))
     return 1;
 }
 
-ImportResult<ProductDto>? result = Path.GetExtension(path).ToLowerInvariant() switch
+MixedImportResult? result = Path.GetExtension(path).ToLowerInvariant() switch
 {
     ".csv" => ProductCsvImporter.Load(path),
     ".json" => ProductJsonImporter.Load(path),
     _ => null
 };
 
-if (result == null)
+if (result is null)
 {
-    Console.WriteLine($"Файл неправильного формату: {Path.GetFullPath(path)}");
+    Console.WriteLine($"Непідтримуваний формат файлу: {Path.GetExtension(path)} (підтримуються тільки .csv та .json)");
     return 1;
 }
 
-Console.WriteLine($"Завантажено записів: {result.Items.Count}");
-foreach (ProductDto p in result.Items.Take(5))
-    Console.WriteLine($" {p.Id,-6} {p.Sku,-10} {p.Name,-26} {p.Quantity,5} {p.Unit}");
+if (result.Products.Count > 0)
+{
+    Console.WriteLine($"Завантажено товарів: {result.Products.Count}");
+    foreach (ProductDto p in result.Products.Take(5))
+        Console.WriteLine($" [P] {p.Id,-6} {p.Sku,-10} {p.Name,-26} {p.Quantity,5} {p.Unit}");
+}
+
+if (result.Warehouses.Count > 0)
+{
+    Console.WriteLine($"Завантажено складів: {result.Warehouses.Count}");
+    foreach (WarehouseDto w in result.Warehouses.Take(5))
+        Console.WriteLine($" [W] {w.Id,-6} {w.Sku,-26} {w.Name}");
+}
+
+if (result.Products.Count == 0 && result.Warehouses.Count == 0 && result.Errors.Count == 0)
+{
+    Console.WriteLine("Завантажено записів: 0");
+}
 
 if (result.Errors.Count > 0)
 {
-    Console.WriteLine($"Пропущено рядків: {result.Errors.Count}");
+    Console.WriteLine($"Пропущено рядків / елементів: {result.Errors.Count}");
     foreach (string e in result.Errors)
-    Console.WriteLine($" ! {e}");
+        Console.WriteLine($" ! {e}");
 }
  
 return 0;

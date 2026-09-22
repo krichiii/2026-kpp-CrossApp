@@ -29,7 +29,8 @@
     ├── data/
     |   ├── sample-correct.csv
     |   ├── sample.csv
-    |   └── sample.json
+    |   ├── sample.json
+    |   └── sample-correct.json
     ├── src/
     │   ├── Cli/
     │   │   ├── Cli.csproj
@@ -38,8 +39,9 @@
     │       ├── Domain/
     │       │   └── .gitkeep
     │       ├── Dto/
-    │       │   ├── ImportResult.cs
-    |       |   └── ProductDto.cs
+    │       │   ├── MixedImportResult.cs
+    |       |   ├── ProductDto.cs
+    |       |   └── WarehouseDto.cs
     |       ├── Import/
     |       |   ├── ProductCsvImporter.cs
     |       |   └── ProductJsonImporter.cs

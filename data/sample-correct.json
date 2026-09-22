@@ -44,8 +44,8 @@
     "id": "P-006",
     "sku": "SKU-006",
     "name": "Профіль CD-60",
-    "unit": "лист",
-    "quantity": ""
+    "unit": "м",
+    "quantity": 800
   },
   {
     "type": "P",
@@ -58,7 +58,7 @@
   {
     "type": "P",
     "id": "P-008",
-    "sku": "",
+    "sku": "SKU-008",
     "name": "Грунтовка глибокого проникнення",
     "unit": "л",
     "quantity": 60
@@ -69,7 +69,7 @@
     "sku": "SKU-009",
     "name": "Плитка керамічна",
     "unit": "м2",
-    "quantity": "багато"
+    "quantity": 310
   },
   {
     "type": "P",
@@ -115,14 +115,6 @@
     "type": "W",
     "id": "W-003",
     "sku": "Склад №3",
-    "name": "",
-    "unit": "",
-    "quantity": ""
-  },
-  {
-    "type": "W",
-    "id": "W-004",
-    "sku": "",
     "name": "",
     "unit": "",
     "quantity": ""
