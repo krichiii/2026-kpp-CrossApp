@@ -1,8 +1,9 @@
 using Core.Dto;
 using Core.Import;
 
-string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample.csv");
+//string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample.csv");
 //string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample-correct.csv");
+string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample.json");
 //string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample-nonexist.csv");
 
 if (!File.Exists(path))
@@ -11,7 +12,18 @@ if (!File.Exists(path))
     return 1;
 }
 
-ImportResult<ProductDto> result = ProductCsvImporter.Load(path);
+ImportResult<ProductDto>? result = Path.GetExtension(path).ToLowerInvariant() switch
+{
+    ".csv" => ProductCsvImporter.Load(path),
+    ".json" => ProductJsonImporter.Load(path),
+    _ => null
+};
+
+if (result == null)
+{
+    Console.WriteLine($"Файл неправильного формату: {Path.GetFullPath(path)}");
+    return 1;
+}
 
 Console.WriteLine($"Завантажено записів: {result.Items.Count}");
 foreach (ProductDto p in result.Items.Take(5))

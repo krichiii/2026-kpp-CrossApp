@@ -26,6 +26,10 @@
 ```
 .
 └── CrossApp/
+    ├── data/
+    |   ├── sample-correct.csv
+    |   ├── sample.csv
+    |   └── sample.json
     ├── src/
     │   ├── Cli/
     │   │   ├── Cli.csproj
@@ -34,7 +38,11 @@
     │       ├── Domain/
     │       │   └── .gitkeep
     │       ├── Dto/
-    │       │   └── .gitkeep
+    │       │   ├── ImportResult.cs
+    |       |   └── ProductDto.cs
+    |       ├── Import/
+    |       |   ├── ProductCsvImporter.cs
+    |       |   └── ProductJsonImporter.cs
     │       ├── Storage/
     │       │   └── .gitkeep
     │       ├── Core.csproj
