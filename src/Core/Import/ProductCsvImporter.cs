@@ -73,6 +73,7 @@ public static class ProductCsvImporter
 
             ["P", ..] => new ParseFailed($"очікую 6 колонок для товару (P;id;sku;name;unit;quantity), отримав {parts.Length}"),
             ["W", ..] => new ParseFailed($"очікую 3 або 4 колонки для складу (W;id;name[;location]), отримав {parts.Length}"),
+            
             { Length: < 5 } => new ParseFailed($"очікую 5 колонок або префікс P/W, отримав {parts.Length}"),
             _ => new ParseFailed($"занадто багато колонок: {parts.Length}")
         };
