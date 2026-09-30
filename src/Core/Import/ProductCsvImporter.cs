@@ -4,7 +4,6 @@ namespace Core.Import;
 
 public static class ProductCsvImporter
 {
-    // Роздільник — крапка з комою: не конфліктує з комою в назвах товарів.
     private const char Separator = ';';
 
     public static MixedImportResult Load(string path)

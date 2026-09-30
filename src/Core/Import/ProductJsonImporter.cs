@@ -42,52 +42,6 @@ public static class ProductJsonImporter
                     }
                 }
             }
-            else if (doc.RootElement.ValueKind == JsonValueKind.Object)
-            {
-                // Підтримка формату { "products": [...], "warehouses": [...] }
-                if (TryGetProperty(doc.RootElement, "products", out var prodElem) && prodElem.ValueKind == JsonValueKind.Array)
-                {
-                    int pIndex = 0;
-                    foreach (JsonElement element in prodElem.EnumerateArray())
-                    {
-                        pIndex++;
-                        switch (DeserializeProduct(element, options))
-                        {
-                            case ParseProductOk product:
-                                products.Add(product.Value);
-                                break;
-
-                            case ParseFailed failed:
-                                errors.Add($"товар {pIndex}: {failed.Reason}");
-                                break;
-                        }
-                    }
-                }
-
-                if (TryGetProperty(doc.RootElement, "warehouses", out var whElem) && whElem.ValueKind == JsonValueKind.Array)
-                {
-                    int wIndex = 0;
-                    foreach (JsonElement element in whElem.EnumerateArray())
-                    {
-                        wIndex++;
-                        switch (DeserializeWarehouse(element, options))
-                        {
-                            case ParseWarehouseOk warehouse:
-                                warehouses.Add(warehouse.Value);
-                                break;
-
-                            case ParseFailed failed:
-                                errors.Add($"склад {wIndex}: {failed.Reason}");
-                                break;
-                        }
-                    }
-                }
-
-                if (products.Count == 0 && warehouses.Count == 0 && errors.Count == 0)
-                {
-                    errors.Add("JSON об'єкт не містить масивів 'products' або 'warehouses'");
-                }
-            }
             else
             {
                 errors.Add($"Очікується масив JSON або об'єкт, отримано {doc.RootElement.ValueKind}");
