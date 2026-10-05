@@ -37,7 +37,7 @@
     │   │   └── Program.cs
     │   └── Core/
     │       ├── Domain/
-    │       │   └── .gitkeep
+    │       │   └── Product.cs
     │       ├── Dto/
     │       │   ├── MixedImportResult.cs
     |       |   ├── ProductDto.cs
@@ -72,3 +72,9 @@
  ```
  ## Середовище
  .NET SDK 9.0, EndeavourOS Titan Nova x64 (Unix 7.2.3.1)
+
+ ## Перелік реалізованих інваріантів
+ - видача більша за залишок (InvalidOperationException)
+ - порожній SKU (ArgumentException)
+ - від'ємний залишок (ArgumentOutOfRangeException)
+ - порожня назва (ArgumentException)

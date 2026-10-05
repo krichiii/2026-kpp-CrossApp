@@ -1,54 +1,27 @@
-using Core.Dto;
-using Core.Import;
+using Core.Domain;
 
-string path = args.Length > 0 ? args[0] : Path.Combine("data", "sample.csv");
+Console.WriteLine("=== Сценарій 1: успіх ===");
 
-if (!File.Exists(path))
-{
-    Console.WriteLine($"Файл не знайдено: {Path.GetFullPath(path)}");
-    return 1;
-}
-
-MixedImportResult? result = Path.GetExtension(path).ToLowerInvariant() switch
-{
-    ".csv" => ProductCsvImporter.Load(path),
-    ".json" => ProductJsonImporter.Load(path),
-    _ => null
-};
-
-if (result is null)
-{
-    Console.WriteLine($"Непідтримуваний формат файлу: {Path.GetExtension(path)} (підтримуються тільки .csv та .json)");
-    return 1;
-}
-
-if (result.Products.Count > 0)
-{
-    Console.WriteLine($"Завантажено товарів: {result.Products.Count}");
-    foreach (ProductDto p in result.Products.Take(5))
-        Console.WriteLine($" [P] {p.Id,-6} {p.Sku,-10} {p.Name,-26} {p.Quantity,5} {p.Unit}");
-}
-
-if (result.Warehouses.Count > 0)
-{
-    Console.WriteLine($"Завантажено складів: {result.Warehouses.Count}");
-    foreach (WarehouseDto w in result.Warehouses.Take(5))
-        Console.WriteLine($" [W] {w.Id,-6} {w.Sku,-26} {w.Name}");
-}
-
-if (result.Products.Count == 0 && result.Warehouses.Count == 0 && result.Errors.Count == 0)
-{
-    Console.WriteLine("Завантажено записів: 0");
-}
-
-if (result.Errors.Count > 0)
-{
-    Console.WriteLine($"Пропущено рядків / елементів: {result.Errors.Count}");
-    foreach (string e in result.Errors)
-        Console.WriteLine($" ! {e}");
-}
+Product product = Product.Create("P-001", "sku-001", "Цемент М400 25кг", "шт", 100);
+Console.WriteLine(product);
+product.RegisterArrival(50);
+product.Issue(30);
+Console.WriteLine(product);
 
 Console.WriteLine();
-Console.WriteLine($"Статистика імпорту: усього — {result.Total}, прийнято — {result.Accepted}, пропущено — {result.Skipped}, % помилок — {result.ErrorPercentage:F1}%");
- 
-return 0;
+Console.WriteLine("=== Сценарій 2: порушення інваріантів ===");
+
+TryDo("видача більша за залишок", () => product.Issue(1000));
+TryDo("порожній SKU", () => Product.Create("P-002", " ", "Пісок", "т", 10));
+TryDo("від'ємний залишок", () => Product.Create("P-003", "SKU-003", "Цегла", "шт", -5));
+TryDo("порожня назва", () => Product.Create("P-003", "SKU-003", "", "шт", -5));
+
+static void TryDo(string title, Action action)  {
+    try {
+        action();
+        Console.WriteLine($" {title}: виняток НЕ спрацював — інваріант відсутній!");
+    }
+    catch (Exception ex) {
+        Console.WriteLine($" {title}: {ex.GetType().Name} — {ex.Message}");
+    }
+}
