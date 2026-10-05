@@ -24,7 +24,7 @@ Console.WriteLine("=== Сценарій 2: порушення інваріант
 TryDo("видача більша за залишок", () => product.Issue(1000));
 TryDo("порожній SKU", () => Product.Create("P-002", " ", "Пісок", "т", 10));
 TryDo("від'ємний залишок", () => Product.Create("P-003", "SKU-003", "Цегла", "шт", -5));
-TryDo("порожня назва", () => Product.Create("P-003", "SKU-003", "", "шт", -5));
+TryDo("порожня назва", () => Product.Create("P-003", "SKU-003", "", "шт", 100));
 
 MixedImportResult result = new(
     Products: [],
@@ -34,23 +34,40 @@ MixedImportResult result = new(
 );
 
 Console.WriteLine();
-Console.WriteLine($"Статистика імпорту: усього — {result.Total}, прийнято — {result.Accepted}, пропущено — {result.Skipped}, % помилок — {result.ErrorPercentage:F1}%");
+Console.WriteLine($"статистика імпорту: усього — {result.Total}, прийнято — {result.Accepted}, пропущено — {result.Skipped}, % помилок — {result.ErrorPercentage:F1}%");
 
 Console.WriteLine();
 Console.WriteLine("=== Сценарій 3: переходи станів (OrderStatus) ===");
 
 Order order = Order.Create("ORD-001");
-Console.WriteLine($"Створено: {order}");
+Console.WriteLine($"створено: {order}");
 
 order.Confirm();
-Console.WriteLine($"Після переходу Draft -> Confirmed: {order}");
+Console.WriteLine($"після переходу Draft -> Confirmed: {order}");
 
 order.Cancel();
-Console.WriteLine($"Після переходу Confirmed -> Cancelled: {order}");
+Console.WriteLine($"після переходу Confirmed -> Cancelled: {order}");
 
 // Неприпустимі переходи
 TryDo("перехід Cancelled -> Confirmed", () => order.Confirm());
 TryDo("перехід Cancelled -> Draft", () => order.ChangeStatus(OrderStatus.Draft));
+
+Console.WriteLine();
+Console.WriteLine("=== Сценарій 4: міжсутінковий інваріант (Order + Product) ===");
+
+// product: Цемент М400 25кг — поточний залишок 120 шт (після RegisterArrival(50) - Issue(30) = 120)
+Order newOrder = Order.Create("ORD-002");
+Console.WriteLine($"створено: {newOrder}");
+
+newOrder.AddItem(product, 50); 
+Console.WriteLine($"  додано: {newOrder}"); 
+
+TryDo("перевищення кількості", () => newOrder.AddItem(product, 999));
+TryDo("недопустима кількість", () => newOrder.AddItem(product, 0));
+
+newOrder.Confirm();
+Console.WriteLine($"замовлення підтверджено: {newOrder}");
+TryDo("спроба додати товар до підтвердженого замовлення", () => newOrder.AddItem(product2, 5));
 
 void TryDo(string title, Action action)
 {

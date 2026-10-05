@@ -80,4 +80,7 @@
  - порожній SKU (ArgumentException)
  - від'ємний залишок (ArgumentOutOfRangeException)
  - порожня назва (ArgumentException)
- - неприпустимий перехід стану замовлення OrderStatus (InvalidOperationException)
+ - неприпустимий перехід стану замовлення OrderStatus (InvalidOperationException) (дод завдання №3)
+ - перевищення кількості товару в замовленні (InvalidOperationException) (дод завдання №2)
+ - недопустима кількість товару в замовленні (ArgumentOutOfRangeException) (дод завдання №2)
+ - спроба додати товар до підтвержденого замовлення (InvalidOperationException) (дод завдання №3)
