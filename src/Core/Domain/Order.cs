@@ -19,14 +19,6 @@ public sealed class Order
         return new Order(id.Trim(), OrderStatus.Draft);
     }
 
-    /// <summary>
-    /// Перевірка допустимих переходів між станами через switch expression.
-    /// Дозволені переходи:
-    ///   Draft -> Confirmed
-    ///   Draft -> Cancelled
-    ///   Confirmed -> Cancelled
-    /// Будь-які інші переходи (наприклад, із Cancelled або повторний перехід у той самий стан) є неприпустимими.
-    /// </summary>
     public void ChangeStatus(OrderStatus newStatus)
     {
         Status = (Status, newStatus) switch
