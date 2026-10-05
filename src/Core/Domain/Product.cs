@@ -47,5 +47,6 @@
     public ProductDto ToDto() => new(Id, Sku, Name, Unit, Quantity);
     public static Product FromDto(ProductDto dto) =>
         Create(dto.Id, dto.Sku, dto.Name, dto.Unit, dto.Quantity);
+
     public override string ToString() => $"{Id} [{Sku}] {Name} — {Quantity} {Unit}";
  }
