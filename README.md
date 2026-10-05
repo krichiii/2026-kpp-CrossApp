@@ -37,6 +37,8 @@
     │   │   └── Program.cs
     │   └── Core/
     │       ├── Domain/
+    │       │   ├── Order.cs
+    │       │   ├── OrderStatus.cs
     │       │   └── Product.cs
     │       ├── Dto/
     │       │   ├── MixedImportResult.cs
@@ -78,3 +80,4 @@
  - порожній SKU (ArgumentException)
  - від'ємний залишок (ArgumentOutOfRangeException)
  - порожня назва (ArgumentException)
+ - неприпустимий перехід стану замовлення OrderStatus (InvalidOperationException)

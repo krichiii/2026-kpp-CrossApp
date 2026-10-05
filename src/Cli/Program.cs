@@ -36,6 +36,22 @@ MixedImportResult result = new(
 Console.WriteLine();
 Console.WriteLine($"Статистика імпорту: усього — {result.Total}, прийнято — {result.Accepted}, пропущено — {result.Skipped}, % помилок — {result.ErrorPercentage:F1}%");
 
+Console.WriteLine();
+Console.WriteLine("=== Сценарій 3: переходи станів (OrderStatus) ===");
+
+Order order = Order.Create("ORD-001");
+Console.WriteLine($"Створено: {order}");
+
+order.Confirm();
+Console.WriteLine($"Після переходу Draft -> Confirmed: {order}");
+
+order.Cancel();
+Console.WriteLine($"Після переходу Confirmed -> Cancelled: {order}");
+
+// Неприпустимі переходи
+TryDo("перехід Cancelled -> Confirmed", () => order.Confirm());
+TryDo("перехід Cancelled -> Draft", () => order.ChangeStatus(OrderStatus.Draft));
+
 void TryDo(string title, Action action)
 {
     try
