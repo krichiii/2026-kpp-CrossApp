@@ -75,7 +75,7 @@
  ## Середовище
  .NET SDK 9.0, EndeavourOS Titan Nova x64 (Unix 7.2.3.1)
 
- ## Перелік реалізованих інваріантів
+ ## Перелік реалізованих тестувань інваріантів
  - видача більша за залишок (InvalidOperationException)
  - порожній SKU (ArgumentException)
  - від'ємний залишок (ArgumentOutOfRangeException)
