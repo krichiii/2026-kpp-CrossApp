@@ -41,3 +41,13 @@ catch (InvalidOperationException ex)
 {
     Console.WriteLine($"[InvalidOperationException] {ex.Message}");
 }
+
+Console.WriteLine();
+Console.WriteLine("=== Демонстрація декоратора CachingCatalogStore (додадкове №1) ===");
+var cachingStore = new CachingCatalogStore(store);
+
+var p1 = cachingStore.GetById(created.Id);
+Console.WriteLine($"Виклик 1: {p1?.Name} (Hits: {cachingStore.CacheHits}, Misses: {cachingStore.CacheMisses})");
+
+var p2 = cachingStore.GetById(created.Id);
+Console.WriteLine($"Виклик 2: {p2?.Name} (Hits: {cachingStore.CacheHits}, Misses: {cachingStore.CacheMisses})");
