@@ -40,6 +40,13 @@ public sealed class FileCatalogStore(string path) : ICatalogStore
         return _cache.GetValueOrDefault(id);
     }
 
+    public IReadOnlyList<Product> Find(Func<Product, bool> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        EnsureLoaded();
+        return _cache.Values.Where(predicate).ToList();
+    }
+
     public void Add(Product item)
     {
         ArgumentNullException.ThrowIfNull(item);

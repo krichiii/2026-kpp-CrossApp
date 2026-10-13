@@ -19,4 +19,5 @@ public sealed class CatalogService(ICatalogStore store)
     }
     public IReadOnlyList<Product> All() => _store.List();
     public Product? Find(string id) => _store.GetById(id);
+    public IReadOnlyList<Product> Find(Func<Product, bool> predicate) => _store.Find(predicate);
  }

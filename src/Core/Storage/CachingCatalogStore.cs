@@ -40,6 +40,18 @@ public sealed class CachingCatalogStore(ICatalogStore inner) : ICatalogStore
         return items;
     }
 
+    public IReadOnlyList<Product> Find(Func<Product, bool> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        var items = _inner.Find(predicate);
+        foreach (var item in items)
+        {
+            _cache[item.Id] = item;
+        }
+
+        return items;
+    }
+
     public void Add(Product item)
     {
         ArgumentNullException.ThrowIfNull(item);
