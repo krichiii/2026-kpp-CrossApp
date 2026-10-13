@@ -7,7 +7,7 @@ string dataPath = Path.Combine(dataDir, "catalog.json");
  
 ICatalogStore store = useFile
     ? new FileCatalogStore(dataPath)
-    : new InMemoryCatalogStore();
+    : new InMemoryCatalogStore(SampleData.Products());
 
 var service = new CatalogService(store);
 Console.WriteLine($"Сховище: {store.GetType().Name}");
@@ -51,3 +51,18 @@ Console.WriteLine($"Виклик 1: {p1?.Name} (Hits: {cachingStore.CacheHits}, 
 
 var p2 = cachingStore.GetById(created.Id);
 Console.WriteLine($"Виклик 2: {p2?.Name} (Hits: {cachingStore.CacheHits}, Misses: {cachingStore.CacheMisses})");
+
+Console.WriteLine();
+Console.WriteLine("=== Пошук з параметром Func<Product, bool> (додаткове №2) ===");
+
+service.Add("SKU-102", "Патч-корд RJ-45", "шт", 15);
+
+var inStock = service.Find(p => p.Quantity > 50);
+Console.WriteLine("Товари з Quantity > 50:");
+foreach (var p in inStock)
+    Console.WriteLine($"  [{p.Sku}] {p.Name} — {p.Quantity} {p.Unit}");
+
+var cables = service.Find(p => p.Name.Contains("Кабель", StringComparison.OrdinalIgnoreCase));
+Console.WriteLine("Товари з назвою, що містить 'Кабель':");
+foreach (var p in cables)
+    Console.WriteLine($"  [{p.Sku}] {p.Name} — {p.Quantity} {p.Unit}");
