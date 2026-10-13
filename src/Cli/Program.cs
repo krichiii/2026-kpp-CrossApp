@@ -1,84 +1,43 @@
+using Core.Abstractions;
 using Core.Domain;
-using Core.Dto;
 
-var newProducts = new List<Product>();
-var errors = new List<string>();
+bool useFile = args.Contains("--file");
+string dataDir = Directory.Exists("data") ? "data" : Path.Combine("..", "..", "data");
+string dataPath = Path.Combine(dataDir, "catalog.json");
+ 
+ICatalogStore store = useFile
+    ? new FileCatalogStore(dataPath)
+    : new InMemoryCatalogStore();
 
-Console.WriteLine("=== Сценарій 1: успіх ===");
+var service = new CatalogService(store);
+Console.WriteLine($"Сховище: {store.GetType().Name}");
+var created = service.Add("SKU-101", "Кабель UTP cat6", "м", 50);
 
-Product product = Product.Create("P-001", "sku-001", "Цемент М400 25кг", "шт", 100);
-Product product2 = Product.Create("P-002", "sku-002", "Пісок будівельний", "т", 18);
-
-newProducts.Add(product);
-newProducts.Add(product2); //дод завдання 1
-
-Console.WriteLine(product);
-product.RegisterArrival(50);
-product.Issue(30);
-Console.WriteLine(product);
-Console.WriteLine(product2);
+service.Receive(created.Id, 25);
+foreach (var p in service.All())
+    Console.WriteLine($" {p.Id} {p.Sku,-10} {p.Name,-22} {p.Quantity,5} {p.Unit}");
 
 Console.WriteLine();
-Console.WriteLine("=== Сценарій 2: порушення інваріантів ===");
+Console.WriteLine("=== Сценарії відмови ===");
 
-TryDo("видача більша за залишок", () => product.Issue(1000));
-TryDo("порожній SKU", () => Product.Create("P-002", " ", "Пісок", "т", 10));
-TryDo("від'ємний залишок", () => Product.Create("P-003", "SKU-003", "Цегла", "шт", -5));
-TryDo("порожня назва", () => Product.Create("P-003", "SKU-003", "", "шт", 100));
-
-MixedImportResult result = new(
-    Products: [],
-    Warehouses: [],
-    newProducts: newProducts,
-    Errors: errors
-);
-
-Console.WriteLine();
-Console.WriteLine($"статистика імпорту: усього — {result.Total}, прийнято — {result.Accepted}, пропущено — {result.Skipped}, % помилок — {result.ErrorPercentage:F1}%");
-
-Console.WriteLine();
-Console.WriteLine("=== Сценарій 3: переходи станів (OrderStatus) ===");
-
-Order order = Order.Create("ORD-001");
-Console.WriteLine($"створено: {order}");
-
-order.Confirm();
-Console.WriteLine($"після переходу Draft -> Confirmed: {order}");
-
-order.Cancel();
-Console.WriteLine($"після переходу Confirmed -> Cancelled: {order}");
-
-// Неприпустимі переходи
-TryDo("перехід Cancelled -> Confirmed", () => order.Confirm());
-TryDo("перехід Cancelled -> Draft", () => order.ChangeStatus(OrderStatus.Draft));
-
-Console.WriteLine();
-Console.WriteLine("=== Сценарій 4: міжсутінковий інваріант (Order + Product) ===");
-
-// product: Цемент М400 25кг — поточний залишок 120 шт (після RegisterArrival(50) - Issue(30) = 120)
-Order newOrder = Order.Create("ORD-002");
-Console.WriteLine($"створено: {newOrder}");
-
-newOrder.AddItem(product, 50); 
-Console.WriteLine($"  додано: {newOrder}"); 
-
-TryDo("перевищення кількості", () => newOrder.AddItem(product, 999));
-TryDo("недопустима кількість", () => newOrder.AddItem(product, 0));
-
-newOrder.Confirm();
-Console.WriteLine($"замовлення підтверджено: {newOrder}");
-TryDo("спроба додати товар до підтвердженого замовлення", () => newOrder.AddItem(product2, 5));
-
-void TryDo(string title, Action action)
+// 1. Спроба викликати Receive з неіснуючим id
+try
 {
-    try
-    {
-        action();
-        Console.WriteLine($" {title}: виняток НЕ спрацював — інваріант відсутній!");
-    }
-    catch (Exception ex)
-    {
-        errors.Add($"{title}: {ex.Message}");
-        Console.WriteLine($" {title}: {ex.GetType().Name} — {ex.Message}");
-    }
+    Console.WriteLine("Спроба зарахування товару з неіснуючим ID ('unknown-id')...");
+    service.Receive("unknown-id", 10);
+}
+catch (InvalidOperationException ex)
+{
+    Console.WriteLine($"[InvalidOperationException] {ex.Message}");
+}
+
+// 2. Спроба додати товар з дублікатом id
+try
+{
+    Console.WriteLine($"Спроба додати товар із дублікатом ID ('{created.Id}')...");
+    store.Add(Product.Create(created.Id, "SKU-999", "Дублікат товару", "шт", 10));
+}
+catch (InvalidOperationException ex)
+{
+    Console.WriteLine($"[InvalidOperationException] {ex.Message}");
 }
