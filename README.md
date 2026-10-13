@@ -7,6 +7,15 @@
  
 **Призначення**: облік залишків товарів по партіях
 
+**Сервіс**: CatalogService.cs
+
+**Інтерфейс**: ICatalogStore.cs 
+
+**Реалізації**:
+- FileCatalogStore.cs
+- InMemoryCatalogStore.cs
+- CachingCatalogStore.cs (додаткове завдання 1[lab05])
+
  ## Таблиця розмірів публікацій (+ Додаткові завдання 1,2 [lab02] )
 
 | RID | Режим | Додаткові режими Publish | Розмір publish | К-сть файлів | Потрібен runtime |
@@ -36,6 +45,8 @@
     │   │   ├── Cli.csproj
     │   │   └── Program.cs
     │   └── Core/
+    |       ├── Abstractions/
+    |       |   └── ICatalogStore.cs
     │       ├── Domain/
     │       │   ├── Order.cs
     │       │   ├── OrderStatus.cs
@@ -47,10 +58,16 @@
     |       ├── Import/
     |       |   ├── ProductCsvImporter.cs
     |       |   └── ProductJsonImporter.cs
+    |       ├── Services/
+    |       |   └── CatalogService.cs
     │       ├── Storage/
-    │       │   └── .gitkeep
+    |       |   ├── CachingCatalogStore.cs
+    |       |   ├── FileCatalogStore.cs
+    |       |   ├── InMemoryCatalogStore.cs
+    │       │   └── StoreFactory.cs
     │       ├── Core.csproj
-    │       └── EnviromentInfo.cs
+    |       ├── EnviromentInfo.cs
+    │       └── SampleData.cs
     ├── .gitignore
     ├── CrossApp.sln
     └── README.md
