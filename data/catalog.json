@@ -70,5 +70,21 @@
     "Unit": "\u0448\u0442",
     "Quantity": 15,
     "Note": null
+  },
+  {
+    "Id": "e08e7934",
+    "Sku": "SKU-101",
+    "Name": "\u041A\u0430\u0431\u0435\u043B\u044C UTP cat6",
+    "Unit": "\u043C",
+    "Quantity": 75,
+    "Note": null
+  },
+  {
+    "Id": "02964293",
+    "Sku": "SKU-102",
+    "Name": "\u041F\u0430\u0442\u0447-\u043A\u043E\u0440\u0434 RJ-45",
+    "Unit": "\u0448\u0442",
+    "Quantity": 15,
+    "Note": null
   }
 ]

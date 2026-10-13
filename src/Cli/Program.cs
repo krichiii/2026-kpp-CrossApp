@@ -1,13 +1,7 @@
 using Core.Abstractions;
 using Core.Domain;
 
-bool useFile = args.Contains("--file");
-string dataDir = Directory.Exists("data") ? "data" : Path.Combine("..", "..", "data");
-string dataPath = Path.Combine(dataDir, "catalog.json");
- 
-ICatalogStore store = useFile
-    ? new FileCatalogStore(dataPath)
-    : new InMemoryCatalogStore(SampleData.Products());
+ICatalogStore store = StoreFactory.Create(args);
 
 var service = new CatalogService(store);
 Console.WriteLine($"Сховище: {store.GetType().Name}");
