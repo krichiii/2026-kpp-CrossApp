@@ -5,7 +5,7 @@ namespace Core.Import;
 
 public static class ProductJsonImporter
 {
-    public static MixedImportResult Load(string path)
+    public static MixedImportResult Load(string path, Action<string>? onSkipped = null)
     {
         var products = new List<ProductDto>();
         var warehouses = new List<WarehouseDto>();
@@ -37,14 +37,18 @@ public static class ProductJsonImporter
                             break;
 
                         case ParseFailed failed:
-                            errors.Add($"елемент {index}: {failed.Reason}");
+                            var msg = $"елемент {index}: {failed.Reason}";
+                            errors.Add(msg);
+                            onSkipped?.Invoke(msg);
                             break;
                     }
                 }
             }
             else
             {
-                errors.Add($"Очікується масив JSON або об'єкт, отримано {doc.RootElement.ValueKind}");
+                var msg = $"Очікується масив JSON або об'єкт, отримано {doc.RootElement.ValueKind}";
+                errors.Add(msg);
+                onSkipped?.Invoke(msg);
             }
         }
 

@@ -6,7 +6,7 @@ public static class ProductCsvImporter
 {
     private const char Separator = ';';
 
-    public static MixedImportResult Load(string path)
+    public static MixedImportResult Load(string path, Action<string>? onSkipped = null)
     {
         var products = new List<ProductDto>();
         var warehouses = new List<WarehouseDto>();
@@ -19,11 +19,23 @@ public static class ProductCsvImporter
             int number = i + 1;
             string line = lines[i];
 
-            if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#'))
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                onSkipped?.Invoke($"рядок {number}: пропущено порожній рядок");
                 continue;
+            }
+
+            if (line.StartsWith('#'))
+            {
+                onSkipped?.Invoke($"рядок {number}: пропущено коментар ({line.Trim()})");
+                continue;
+            }
 
             if (number == 1 && (line.StartsWith("id", StringComparison.OrdinalIgnoreCase) || line.StartsWith("type", StringComparison.OrdinalIgnoreCase)))
+            {
+                onSkipped?.Invoke($"рядок {number}: пропущено заголовок");
                 continue; // рядок заголовків
+            }
 
             switch (ParseLine(line))
             {
@@ -36,7 +48,9 @@ public static class ProductCsvImporter
                     break;
 
                 case ParseFailed failed:
-                    errors.Add($"рядок {number}: {failed.Reason}");
+                    var errorMsg = $"рядок {number}: {failed.Reason}";
+                    errors.Add(errorMsg);
+                    onSkipped?.Invoke(errorMsg);
                     break;
             }
         }

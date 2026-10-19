@@ -1,10 +1,11 @@
 using Core.Abstractions;
 using Core.Domain;
+using Core.Import;
 using Core.Notifications;
 
 var logPath = Path.Combine(Directory.GetCurrentDirectory(), "logs", "app.log");
 
-// Ручний DI
+// Ручний DI (додаткове №1)
 INotificationSink sink = new CompositeNotificationSink(
     new ConsoleSink(),
     new FileSink(logPath)
@@ -40,3 +41,11 @@ var inStock = service.Find(p => p.Quantity > 50);
 Console.WriteLine("Товари з Quantity > 50:");
 foreach (var p in inStock)
     Console.WriteLine($"  [{p.Sku}] {p.Name} — {p.Quantity} {p.Unit}");
+
+//додаткове №2
+string samplePath = Path.Combine(Directory.GetCurrentDirectory(), "data", "sample.csv");
+if (File.Exists(samplePath))
+{
+    Console.WriteLine("\nІмпорт data/sample.csv (звіт про пропущені рядки через Action<string>):");
+    ProductCsvImporter.Load(samplePath, skipped => Console.WriteLine($"  [Пропущено]: {skipped}"));
+}
