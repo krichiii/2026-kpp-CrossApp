@@ -1,14 +1,19 @@
 using Core.Domain;
 using Core.Abstractions;
- public sealed class CatalogService(ICatalogStore store)
- {
+public sealed class CatalogService(ICatalogStore store, INotificationSink? sink = null)
+{
     private readonly ICatalogStore _store = store ?? throw new 
         ArgumentNullException(nameof(store));
+    private readonly INotificationSink? _sink = sink;
 
     public event EventHandler<CatalogChangedEventArgs>? Changed;
 
-    private void OnChanged(Product p, CatalogChangeKind kind, int delta) =>
-        Changed?.Invoke(this, new CatalogChangedEventArgs(p.Id, kind, delta, p.Quantity));
+    private void OnChanged(Product p, CatalogChangeKind kind, int delta)
+    {
+        var args = new CatalogChangedEventArgs(p.Id, kind, delta, p.Quantity);
+        _sink?.Notify(args);
+        Changed?.Invoke(this, args);
+    }
 
     public Product Add(string sku, string name, string unit, int quantity)
     {

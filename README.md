@@ -47,7 +47,8 @@
     │   │   └── Program.cs
     │   └── Core/
     |       ├── Abstractions/
-    |       |   └── ICatalogStore.cs
+    |       |   ├── ICatalogStore.cs
+    |       |   └── INotificationSink.cs
     │       ├── Domain/
     │       │   ├── Order.cs
     │       │   ├── OrderStatus.cs
@@ -62,6 +63,10 @@
     |       ├── Import/
     |       |   ├── ProductCsvImporter.cs
     |       |   └── ProductJsonImporter.cs
+    |       ├── Notifications/
+    |       |   ├── CompositeNotificationSink.cs
+    |       |   ├── ConsoleSink.cs
+    |       |   └── FileSink.cs
     |       ├── Services/
     |       |   └── CatalogService.cs
     │       ├── Storage/

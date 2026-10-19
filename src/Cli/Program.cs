@@ -1,29 +1,26 @@
 using Core.Abstractions;
 using Core.Domain;
+using Core.Notifications;
 
-var logPath = Path.Combine(AppContext.BaseDirectory, "logs", "app.log");
-Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
+var logPath = Path.Combine(Directory.GetCurrentDirectory(), "logs", "app.log");
 
-void OnCatalogChanged(object? sender, CatalogChangedEventArgs e)
-{
-    var line = $"{e.At:HH:mm:ss} {e.Kind,-8} {e.Id} {e.Delta,4:+0;-0} {e.QuantityAfter}";
-    Console.WriteLine(line);
-    File.AppendAllText(logPath, line + Environment.NewLine);
-}
+// Ручний DI
+INotificationSink sink = new CompositeNotificationSink(
+    new ConsoleSink(),
+    new FileSink(logPath)
+);
 
 ICatalogStore store = StoreFactory.Create(args);
-var service = new CatalogService(store);
+var service = new CatalogService(store, sink);
 
-service.Changed += OnCatalogChanged;
 int changes = 0;
 service.Changed += (_, _) => changes++;
 
 var created = service.Add("SKU-101", "Кабель UTP cat6", "м", 50);
 service.Receive(created.Id, 25);
 Console.WriteLine($"Подій отримано: {changes}");
-service.Changed -= OnCatalogChanged;
-service.Receive(created.Id, 5); // тиха операція: підписка керована
-Console.WriteLine($"Подій отримано: {changes}"); // +1 лише від лямбди-лічильника
+service.Receive(created.Id, 5); 
+Console.WriteLine($"Подій отримано: {changes}");
 
 foreach (var p in service.All())
     Console.WriteLine($" {p.Id} {p.Sku,-10} {p.Name,-22} {p.Quantity,5} {p.Unit}");
