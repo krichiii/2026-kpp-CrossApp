@@ -36,6 +36,7 @@
 .
 └── CrossApp/
     ├── data/
+    |   ├── catalog.json
     |   ├── sample-correct.csv
     |   ├── sample.csv
     |   ├── sample.json
@@ -55,6 +56,9 @@
     │       │   ├── MixedImportResult.cs
     |       |   ├── ProductDto.cs
     |       |   └── WarehouseDto.cs
+    |       ├── Events/
+    |       |   ├── CatalogChangedEventArgs.cs
+    |       |   └── CatalogChangeKind.cs
     |       ├── Import/
     |       |   ├── ProductCsvImporter.cs
     |       |   └── ProductJsonImporter.cs
