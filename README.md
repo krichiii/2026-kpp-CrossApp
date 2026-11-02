@@ -67,6 +67,10 @@
     |       |   ├── CompositeNotificationSink.cs
     |       |   ├── ConsoleSink.cs
     |       |   └── FileSink.cs
+    |       ├── Reports/
+    |       |   ├── GroupSummary.cs
+    |       |   ├── ReportService.cs
+    |       |   └── StockLine.cs
     |       ├── Services/
     |       |   └── CatalogService.cs
     │       ├── Storage/

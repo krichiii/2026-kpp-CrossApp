@@ -1,11 +1,9 @@
 using Core.Abstractions;
 using Core.Domain;
-using Core.Import;
 using Core.Notifications;
 
 var logPath = Path.Combine(Directory.GetCurrentDirectory(), "logs", "app.log");
 
-// Ручний DI (додаткове №1)
 INotificationSink sink = new CompositeNotificationSink(
     new ConsoleSink(),
     new FileSink(logPath)
@@ -14,38 +12,42 @@ INotificationSink sink = new CompositeNotificationSink(
 ICatalogStore store = StoreFactory.Create(args);
 var service = new CatalogService(store, sink);
 
-int changes = 0;
-service.Changed += (_, _) => changes++;
+var source = service.All().ToList();
+var query = source.Where(p => p.Quantity < 10); // запит побудований, але не виконаний
+ 
+Console.WriteLine($"Дефіцитних до змін: {query.Count()}"); // ось тут запит виконується
+source.Add(Product.Create("tmp00001", "SKU-999", "Скоба", "шт", 3));
+Console.WriteLine($"Дефіцитних після змін: {query.Count()}"); // додано новий елемент і число вже інше
 
-var created = service.Add("SKU-101", "Кабель UTP cat6", "м", 50);
-service.Receive(created.Id, 25);
-Console.WriteLine($"Подій отримано: {changes}");
-service.Receive(created.Id, 5); 
-Console.WriteLine($"Подій отримано: {changes}");
+var snapshot = query.ToList(); // результат зафіксовано
+source.Clear();
 
-foreach (var p in service.All())
-    Console.WriteLine($" {p.Id} {p.Sku,-10} {p.Name,-22} {p.Quantity,5} {p.Unit}");
+Console.WriteLine($"У знімку лишилось: {snapshot.Count}");
 
-try { service.Receive("unknown-id", 10); }
-catch (InvalidOperationException ex)
+var items = service.All();
+var command = args.FirstOrDefault(a => !a.StartsWith("--")) ?? "report-top";
+
+switch (command)
 {
-    Console.WriteLine($"[InvalidOperationException] {ex.Message}");
-}
-try { store.Add(Product.Create(created.Id, "SKU-999", "Дублікат товару", "шт", 10)); }
-catch (InvalidOperationException ex)
-{
-    Console.WriteLine($"[InvalidOperationException] {ex.Message}");
-}
+    case "report-top": Print(ReportService.TopByQuantity(items, 5)); break;
 
-var inStock = service.Find(p => p.Quantity > 50);
-Console.WriteLine("Товари з Quantity > 50:");
-foreach (var p in inStock)
-    Console.WriteLine($"  [{p.Sku}] {p.Name} — {p.Quantity} {p.Unit}");
+    case "report-low": Print(ReportService.LowStock(items, 10)); break;
 
-//додаткове №2
-string samplePath = Path.Combine(Directory.GetCurrentDirectory(), "data", "sample.csv");
-if (File.Exists(samplePath))
-{
-    Console.WriteLine("\nІмпорт data/sample.csv (звіт про пропущені рядки через Action<string>):");
-    ProductCsvImporter.Load(samplePath, skipped => Console.WriteLine($"  [Пропущено]: {skipped}"));
-}
+    case "report-groups":
+        foreach (var g in ReportService.ByUnit(items))
+            Console.WriteLine($" {g.Key,-6} позицій: {g.Count,3} сумарно: {g.TotalQuantity,6}");
+        break;
+
+    case "report-sum":
+        var t = ReportService.Totals(items);
+        Console.WriteLine($" позицій {t.Items}, всього {t.Total}, середнє {t.Average:F2}, макс {t.Max}");
+        break;
+
+    default: Console.WriteLine("report-top | report-low | report-groups | report-sum"); break;
+ }
+
+ static void Print(IReadOnlyList<StockLine> lines)
+ {
+    foreach (var l in lines)
+        Console.WriteLine($" {l.Sku,-10} {l.Name,-22} {l.Quantity,6} {l.Unit}");
+ }
