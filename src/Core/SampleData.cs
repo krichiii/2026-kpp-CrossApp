@@ -23,4 +23,19 @@ public static class SampleData
         Product.Create("P-017", "SKU-017", "Труба поліпропіленова 20мм", "м", 2),
         Product.Create("P-018", "SKU-018", "Піна монтажна всесезонна 750мл", "шт", 35)
     ];
+
+    public static IEnumerable<Movement> Movements() =>
+    [
+        new("MOV-001", "P-001", 50, MovementType.Incoming, new DateTime(2026, 10, 1), "Постачання від заводу"),
+        new("MOV-002", "P-001", 20, MovementType.Outgoing, new DateTime(2026, 10, 5), "Відвантаження замовнику"),
+        new("MOV-003", "P-003", 1000, MovementType.Incoming, new DateTime(2026, 10, 2), "Партія №12"),
+        new("MOV-004", "P-003", 400, MovementType.Outgoing, new DateTime(2026, 10, 10), "Будівельний майданчик А"),
+        new("MOV-005", "P-004", 150, MovementType.Incoming, new DateTime(2026, 10, 3), "Постачання блоків"),
+        new("MOV-006", "P-007", 100, MovementType.Outgoing, new DateTime(2026, 10, 12), "Монтажні роботи"),
+        new("MOV-007", "P-008", 200, MovementType.Incoming, new DateTime(2026, 10, 4), "Прихід кабелю"),
+        new("MOV-008", "P-008", 150, MovementType.Outgoing, new DateTime(2026, 10, 8), "Проєкт Б"),
+        new("MOV-009", "P-011", 5, MovementType.Outgoing, new DateTime(2026, 10, 15), "Видача клієнту"),
+        new("MOV-010", "P-014", 50, MovementType.Incoming, new DateTime(2026, 10, 6), "Постачання"),
+        new("MOV-011", "P-014", 30, MovementType.Outgoing, new DateTime(2026, 10, 14), "Ремонт офісу")
+    ];
 }

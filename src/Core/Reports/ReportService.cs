@@ -32,4 +32,23 @@ public static class ReportService
             : (list.Count, list.Sum(p => p.Quantity),
                 list.Average(p => p.Quantity), list.Max(p => p.Quantity));
     }
- }
+
+    // 5) Join двох колекцій (товари × переміщення) з проєкцією у детальний DTO
+    public static IReadOnlyList<ProductMovementDetail> ProductMovementDetails(
+        IEnumerable<Product> products,
+        IEnumerable<Movement> movements) =>
+        products.Join(
+            movements,
+            p => p.Id,
+            m => m.ProductId,
+            (p, m) => new ProductMovementDetail(
+                m.Id,
+                p.Sku,
+                p.Name,
+                m.Type,
+                m.Quantity,
+                m.Timestamp
+            ))
+            .OrderBy(d => d.Timestamp)
+            .ToList();
+}

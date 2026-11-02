@@ -25,6 +25,7 @@ source.Clear();
 Console.WriteLine($"У знімку лишилось: {snapshot.Count}");
 
 var items = service.All();
+var movements = SampleData.Movements();
 var command = args.FirstOrDefault(a => !a.StartsWith("--")) ?? "report-top";
 
 switch (command)
@@ -43,7 +44,14 @@ switch (command)
         Console.WriteLine($" позицій {t.Items}, всього {t.Total}, середнє {t.Average:F2}, макс {t.Max}");
         break;
 
-    default: Console.WriteLine("report-top | report-low | report-groups | report-sum"); break;
+    case "report-movements-detail":
+        Console.WriteLine($" {"ID",-9} {"SKU",-10} {"Назва",-36} {"Тип",-10} {"К-сть",6} {"Дата",-12}");
+        Console.WriteLine(new string('-', 82));
+        foreach (var d in ReportService.ProductMovementDetails(items, movements))
+            Console.WriteLine($" {d.MovementId,-9} {d.Sku,-10} {d.Name,-36} {d.Type,-10} {d.Quantity,6} {d.Timestamp:yyyy-MM-dd}");
+        break;
+
+    default: Console.WriteLine("report-top | report-low | report-groups | report-sum | report-movements | report-movements-detail"); break;
  }
 
  static void Print(IReadOnlyList<StockLine> lines)
