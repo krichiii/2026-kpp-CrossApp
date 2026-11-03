@@ -9,10 +9,9 @@ public static class ReportService
         .Select(p => new StockLine(p.Sku, p.Name, p.Quantity, p.Unit))
         .ToList();
 
-    // 2) топ-N зі стабільним порядком
+    // 2) топ-N зі стабільним порядком (використання власного методу TopBy)
     public static IReadOnlyList<StockLine> TopByQuantity(IEnumerable<Product> source, int n) => 
-        source.OrderByDescending(p => p.Quantity).ThenBy(p => p.Sku, StringComparer.Ordinal)
-        .Take(n)
+        source.TopBy(p => p.Quantity, n)
         .Select(p => new StockLine(p.Sku, p.Name, p.Quantity, p.Unit))
         .ToList();
  
@@ -33,7 +32,33 @@ public static class ReportService
                 list.Average(p => p.Quantity), list.Max(p => p.Quantity));
     }
 
-    // 5) Join двох колекцій (товари × переміщення) з проєкцією у детальний DTO
+    // 5) GroupJoin двох колекцій (товари × переміщення) з проєкцією у зведений DTO
+    public static IReadOnlyList<ProductMovementSummary> ProductMovementSummaries(
+        IEnumerable<Product> products,
+        IEnumerable<Movement> movements) =>
+        products.GroupJoin(
+            movements,
+            p => p.Id,
+            m => m.ProductId,
+            (p, movs) =>
+            {
+                var movList = movs.ToList();
+                var incoming = movList.Where(m => m.Type == MovementType.Incoming).Sum(m => m.Quantity);
+                var outgoing = movList.Where(m => m.Type == MovementType.Outgoing).Sum(m => m.Quantity);
+                return new ProductMovementSummary(
+                    p.Sku,
+                    p.Name,
+                    movList.Count,
+                    incoming,
+                    outgoing,
+                    incoming - outgoing
+                );
+            })
+            .OrderByDescending(s => s.TotalMovements)
+            .ThenBy(s => s.Sku, StringComparer.Ordinal)
+            .ToList();
+
+    // 6) Join двох колекцій (товари × переміщення) з проєкцією у детальний DTO
     public static IReadOnlyList<ProductMovementDetail> ProductMovementDetails(
         IEnumerable<Product> products,
         IEnumerable<Movement> movements) =>
@@ -50,5 +75,23 @@ public static class ReportService
                 m.Timestamp
             ))
             .OrderBy(d => d.Timestamp)
+            .ToList();
+
+    // 7) топ-N товарів за активністю переміщень
+    public static IReadOnlyList<ProductMovementSummary> TopMovedProducts(
+        IEnumerable<Product> products,
+        IEnumerable<Movement> movements,
+        int n) =>
+        ProductMovementSummaries(products, movements)
+            .TopBy(s => s.TotalMovements, n)
+            .ToList();
+
+    // 8) топ-N одиничних переміщень за обсягом
+    public static IReadOnlyList<ProductMovementDetail> TopLargestMovements(
+        IEnumerable<Product> products,
+        IEnumerable<Movement> movements,
+        int n) =>
+        ProductMovementDetails(products, movements)
+            .TopBy(m => m.Quantity, n)
             .ToList();
 }

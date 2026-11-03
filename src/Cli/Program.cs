@@ -30,9 +30,15 @@ var command = args.FirstOrDefault(a => !a.StartsWith("--")) ?? "report-top";
 
 switch (command)
 {
-    case "report-top": Print(ReportService.TopByQuantity(items, 5)); break;
+    // Звіт 1 із використанням власного TopBy (топ товарів за залишком)
+    case "report-top":
+        Console.WriteLine("\n--- Топ-5 товарів за залишком ---");
+        Print(ReportService.TopByQuantity(items, 5));
+        break;
 
-    case "report-low": Print(ReportService.LowStock(items, 10)); break;
+    case "report-low":
+        Print(ReportService.LowStock(items, 10));
+        break;
 
     case "report-groups":
         foreach (var g in ReportService.ByUnit(items))
@@ -44,6 +50,22 @@ switch (command)
         Console.WriteLine($" позицій {t.Items}, всього {t.Total}, середнє {t.Average:F2}, макс {t.Max}");
         break;
 
+    case "report-movements":
+        Console.WriteLine($" {"SKU",-10} {"Назва",-36} {"Рухів",6} {"Прихід",8} {"Видача",8} {"Сальдо",8}");
+        Console.WriteLine(new string('-', 82));
+        foreach (var s in ReportService.ProductMovementSummaries(items, movements))
+            Console.WriteLine($" {s.Sku,-10} {s.Name,-36} {s.TotalMovements,6} {s.IncomingQuantity,8} {s.OutgoingQuantity,8} {s.NetChange,8}");
+        break;
+
+    // Звіт 2 із використанням власного TopBy (топ товарів за активністю переміщень)
+    case "report-top-movements":
+        Console.WriteLine("\n--- Топ-3 товарів за активністю переміщень ---");
+        Console.WriteLine($" {"SKU",-10} {"Назва",-36} {"Рухів",6} {"Прихід",8} {"Видача",8} {"Сальдо",8}");
+        Console.WriteLine(new string('-', 82));
+        foreach (var s in ReportService.TopMovedProducts(items, movements, 3))
+            Console.WriteLine($" {s.Sku,-10} {s.Name,-36} {s.TotalMovements,6} {s.IncomingQuantity,8} {s.OutgoingQuantity,8} {s.NetChange,8}");
+        break;
+
     case "report-movements-detail":
         Console.WriteLine($" {"ID",-9} {"SKU",-10} {"Назва",-36} {"Тип",-10} {"К-сть",6} {"Дата",-12}");
         Console.WriteLine(new string('-', 82));
@@ -51,11 +73,13 @@ switch (command)
             Console.WriteLine($" {d.MovementId,-9} {d.Sku,-10} {d.Name,-36} {d.Type,-10} {d.Quantity,6} {d.Timestamp:yyyy-MM-dd}");
         break;
 
-    default: Console.WriteLine("report-top | report-low | report-groups | report-sum | report-movements | report-movements-detail"); break;
- }
+    default:
+        Console.WriteLine("report-top | report-low | report-groups | report-sum | report-movements | report-top-movements | report-movements-detail");
+        break;
+}
 
- static void Print(IReadOnlyList<StockLine> lines)
- {
+static void Print(IReadOnlyList<StockLine> lines)
+{
     foreach (var l in lines)
-        Console.WriteLine($" {l.Sku,-10} {l.Name,-22} {l.Quantity,6} {l.Unit}");
- }
+        Console.WriteLine($" {l.Sku,-10} {l.Name,-32} {l.Quantity,6} {l.Unit}");
+}

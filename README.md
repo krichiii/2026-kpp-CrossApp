@@ -68,7 +68,10 @@
     |       |   ├── ConsoleSink.cs
     |       |   └── FileSink.cs
     |       ├── Reports/
+    |       |   ├── EnumerableExtensions.cs
     |       |   ├── GroupSummary.cs
+    |       |   ├── ProductMovementDetail.cs
+    |       |   ├── ProductMovementSummary.cs
     |       |   ├── ReportService.cs
     |       |   └── StockLine.cs
     |       ├── Services/

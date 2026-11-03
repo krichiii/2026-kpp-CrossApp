@@ -34,7 +34,7 @@ public static class SampleData
         new("MOV-006", "P-007", 100, MovementType.Outgoing, new DateTime(2026, 10, 12), "Монтажні роботи"),
         new("MOV-007", "P-008", 200, MovementType.Incoming, new DateTime(2026, 10, 4), "Прихід кабелю"),
         new("MOV-008", "P-008", 150, MovementType.Outgoing, new DateTime(2026, 10, 8), "Проєкт Б"),
-        new("MOV-009", "P-011", 5, MovementType.Outgoing, new DateTime(2026, 10, 15), "Видача клієнту"),
+        new("MOV-009", "P-011", 5, MovementType.Incoming, new DateTime(2026, 10, 15), "Видача клієнту"),
         new("MOV-010", "P-014", 50, MovementType.Incoming, new DateTime(2026, 10, 6), "Постачання"),
         new("MOV-011", "P-014", 30, MovementType.Outgoing, new DateTime(2026, 10, 14), "Ремонт офісу")
     ];
