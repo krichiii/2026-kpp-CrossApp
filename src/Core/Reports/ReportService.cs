@@ -15,13 +15,22 @@ public static class ReportService
         .Select(p => new StockLine(p.Sku, p.Name, p.Quantity, p.Unit))
         .ToList();
  
-    // 3) групування з підрахунком і сумою
+    // 3) групування з підрахунком і сумою (методний синтаксис)
     public static IReadOnlyList<GroupSummary> ByUnit(IEnumerable<Product> source) =>
         source.GroupBy(p => p.Unit, StringComparer.OrdinalIgnoreCase)
         .Select(g => new GroupSummary(g.Key, g.Count(), g.Sum(p => p.Quantity)))
         .OrderByDescending(s => s.TotalQuantity)
         .ToList();
-
+/*
+    // звіт у синтаксисі запитів (Query Syntax: from ... group ... into ...)
+    public static IReadOnlyList<GroupSummary> ByUnitQuery(IEnumerable<Product> source) =>
+        (from p in source
+         group p by p.Unit into g
+         let totalQty = g.Sum(x => x.Quantity)
+         orderby totalQty descending
+         select new GroupSummary(g.Key, g.Count(), totalQty))
+        .ToList();
+*/
     // 4) агрегати з обробкою порожньої послідовності
     public static (int Items, int Total, double Average, int Max) Totals(IEnumerable<Product> source)
     {
@@ -86,12 +95,4 @@ public static class ReportService
             .TopBy(s => s.TotalMovements, n)
             .ToList();
 
-    // 8) топ-N одиничних переміщень за обсягом
-    public static IReadOnlyList<ProductMovementDetail> TopLargestMovements(
-        IEnumerable<Product> products,
-        IEnumerable<Movement> movements,
-        int n) =>
-        ProductMovementDetails(products, movements)
-            .TopBy(m => m.Quantity, n)
-            .ToList();
 }

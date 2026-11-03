@@ -14,7 +14,12 @@ var service = new CatalogService(store, sink);
 
 var source = service.All().ToList();
 var query = source.Where(p => p.Quantity < 10); // запит побудований, але не виконаний
- 
+/* 
+Еквівалент у синтаксисі запитів (Query Syntax):
+ var query = from p in source
+             where p.Quantity < 10
+             select p;
+*/
 Console.WriteLine($"Дефіцитних до змін: {query.Count()}"); // ось тут запит виконується
 source.Add(Product.Create("tmp00001", "SKU-999", "Скоба", "шт", 3));
 Console.WriteLine($"Дефіцитних після змін: {query.Count()}"); // додано новий елемент і число вже інше
