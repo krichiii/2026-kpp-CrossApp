@@ -38,4 +38,22 @@ public static class SampleData
         new("MOV-010", "P-014", 50, MovementType.Incoming, new DateTime(2026, 10, 6), "Постачання"),
         new("MOV-011", "P-014", 30, MovementType.Outgoing, new DateTime(2026, 10, 14), "Ремонт офісу")
     ];
+
+    public static List<Product> Generate(int count)
+    {
+        var random = new Random(42);
+        string[] units = ["шт", "м", "т", "лист", "уп", "м2"];
+        var list = new List<Product>(count);
+        for (int i = 1; i <= count; i++)
+        {
+            list.Add(Product.Create(
+                $"P-{i:D6}",
+                $"SKU-{i:D6}",
+                $"Товар #{i}",
+                units[random.Next(units.Length)],
+                random.Next(0, 500)
+            ));
+        }
+        return list;
+    }
 }

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Core.Abstractions;
 using Core.Domain;
 using Core.Notifications;
@@ -78,9 +79,60 @@ switch (command)
             Console.WriteLine($" {d.MovementId,-9} {d.Sku,-10} {d.Name,-36} {d.Type,-10} {d.Quantity,6} {d.Timestamp:yyyy-MM-dd}");
         break;
 
-    default:
-        Console.WriteLine("report-top | report-low | report-groups | report-sum | report-movements | report-top-movements | report-movements-detail");
+    case "benchmark":
+        RunBenchmark();
         break;
+
+    default:
+        Console.WriteLine("report-top | report-low | report-groups | report-sum | report-movements | report-top-movements | report-movements-detail | benchmark");
+        break;
+}
+
+static void RunBenchmark()
+{
+    const int count = 100_000;
+    Console.WriteLine($"\n=== Бенчмарк Stopwatch на {count:N0} згенерованих записах ===");
+    var dataset = SampleData.Generate(count);
+
+    // --- Тест 1: Звіт LowStock (Where -> OrderBy -> Select -> ToList) ---
+    Console.WriteLine("--- Тест 1: Звіт LowStock (Where -> OrderBy -> Select -> ToList) ---");
+    // Прогрів JIT
+    ReportService.LowStock(dataset, 50);
+    ReportService.LowStockWithIntermediateToList(dataset, 50);
+    var sw = Stopwatch.StartNew();
+    sw.Stop();
+
+    sw.Restart();
+    var res1 = ReportService.LowStock(dataset, 50);
+    sw.Stop();
+    var timeDirect = sw.Elapsed.TotalMilliseconds;
+
+    sw.Restart();
+    var res2 = ReportService.LowStockWithIntermediateToList(dataset, 50);
+    sw.Stop();
+    var timeIntermediate = sw.Elapsed.TotalMilliseconds;
+
+    Console.WriteLine($"  [Без ToList() у середині]: {timeDirect,7:F2} мс");
+    Console.WriteLine($"  [З ToList() у середині]:   {timeIntermediate,7:F2} мс");
+
+    // --- Тест 2: Звіт TopByQuantity (OrderBy -> Take -> Select -> ToList) ---
+    Console.WriteLine("--- Тест 2: Звіт TopByQuantity (OrderByDescending -> Take -> Select -> ToList) ---");
+    // Прогрів JIT
+    ReportService.TopByQuantity(dataset, 10);
+    ReportService.TopByQuantityWithIntermediateToList(dataset, 10);
+
+    sw.Restart();
+    var res3 = ReportService.TopByQuantity(dataset, 10);
+    sw.Stop();
+    var timeTopDirect = sw.Elapsed.TotalMilliseconds;
+
+    sw.Restart();
+    var res4 = ReportService.TopByQuantityWithIntermediateToList(dataset, 10);
+    sw.Stop();
+    var timeTopIntermediate = sw.Elapsed.TotalMilliseconds;
+
+    Console.WriteLine($"  [Без ToList() перед Take]: {timeTopDirect,7:F2} мс");
+    Console.WriteLine($"  [З ToList() перед Take]:   {timeTopIntermediate,7:F2} мс");
 }
 
 static void Print(IReadOnlyList<StockLine> lines)

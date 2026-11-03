@@ -95,4 +95,19 @@ public static class ReportService
             .TopBy(s => s.TotalMovements, n)
             .ToList();
 
+    // 8) LowStock з проміжним ToList() у середині ланцюжка (для порівняння продуктивності)
+    public static IReadOnlyList<StockLine> LowStockWithIntermediateToList(IEnumerable<Product> source, int threshold) =>
+        source.Where(p => p.Quantity < threshold)
+        .ToList() // передчасна матеріалізація у середині ланцюжка
+        .OrderBy(p => p.Quantity).ThenBy(p => p.Sku, StringComparer.Ordinal)
+        .Select(p => new StockLine(p.Sku, p.Name, p.Quantity, p.Unit))
+        .ToList();
+
+    // 9) TopByQuantity з проміжним ToList() перед Take (для порівняння продуктивності)
+    public static IReadOnlyList<StockLine> TopByQuantityWithIntermediateToList(IEnumerable<Product> source, int n) =>
+        source.OrderByDescending(p => p.Quantity)
+        .ToList() // передчасна матеріалізація 100 000 елементів перед Take
+        .Take(n)
+        .Select(p => new StockLine(p.Sku, p.Name, p.Quantity, p.Unit))
+        .ToList();
 }
