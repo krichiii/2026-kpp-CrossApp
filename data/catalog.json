@@ -2,33 +2,177 @@
   {
     "Id": "812ba305",
     "Sku": "SKU-101",
-    "Name": "\u041A\u0430\u0431\u0435\u043B\u044C UTP cat6",
-    "Unit": "\u043C",
+    "Name": "Кабель UTP cat6",
+    "Unit": "м",
     "Quantity": 75,
     "Note": null
   },
   {
     "Id": "f73c1f67",
     "Sku": "SKU-102",
-    "Name": "\u041F\u0430\u0442\u0447-\u043A\u043E\u0440\u0434 RJ-45",
-    "Unit": "\u0448\u0442",
+    "Name": "Патч-корд RJ-45",
+    "Unit": "шт",
     "Quantity": 15,
     "Note": null
   },
   {
     "Id": "a56a4567",
     "Sku": "SKU-101",
-    "Name": "\u041A\u0430\u0431\u0435\u043B\u044C UTP cat6",
-    "Unit": "\u043C",
+    "Name": "Кабель UTP cat6",
+    "Unit": "м",
     "Quantity": 75,
     "Note": null
   },
   {
     "Id": "d06a40e5",
     "Sku": "SKU-102",
-    "Name": "\u041F\u0430\u0442\u0447-\u043A\u043E\u0440\u0434 RJ-45",
-    "Unit": "\u0448\u0442",
+    "Name": "Патч-корд RJ-45",
+    "Unit": "шт",
     "Quantity": 15,
+    "Note": null
+  },
+  {
+    "Id": "P-001",
+    "Sku": "SKU-001",
+    "Name": "Цемент М400 25кг",
+    "Unit": "шт",
+    "Quantity": 120,
+    "Note": null
+  },
+  {
+    "Id": "P-002",
+    "Sku": "SKU-002",
+    "Name": "Пісок будівельний",
+    "Unit": "т",
+    "Quantity": 25,
+    "Note": null
+  },
+  {
+    "Id": "P-003",
+    "Sku": "SKU-003",
+    "Name": "Цегла керамічна рядова",
+    "Unit": "шт",
+    "Quantity": 2500,
+    "Note": null
+  },
+  {
+    "Id": "P-004",
+    "Sku": "SKU-004",
+    "Name": "Газоблок D500 600x300x200",
+    "Unit": "шт",
+    "Quantity": 450,
+    "Note": null
+  },
+  {
+    "Id": "P-005",
+    "Sku": "SKU-005",
+    "Name": "Арматура А500С 12мм",
+    "Unit": "м",
+    "Quantity": 800,
+    "Note": null
+  },
+  {
+    "Id": "P-006",
+    "Sku": "SKU-006",
+    "Name": "Щебінь гранітний фр. 5-20",
+    "Unit": "т",
+    "Quantity": 40,
+    "Note": null
+  },
+  {
+    "Id": "P-007",
+    "Sku": "SKU-007",
+    "Name": "Кабель UTP cat6 4P",
+    "Unit": "м",
+    "Quantity": 350,
+    "Note": null
+  },
+  {
+    "Id": "P-008",
+    "Sku": "SKU-008",
+    "Name": "Кабель силовий ВВГнг 3х2.5",
+    "Unit": "м",
+    "Quantity": 500,
+    "Note": null
+  },
+  {
+    "Id": "P-009",
+    "Sku": "SKU-009",
+    "Name": "Автоматичний вимикач 16А",
+    "Unit": "шт",
+    "Quantity": 45,
+    "Note": null
+  },
+  {
+    "Id": "P-010",
+    "Sku": "SKU-010",
+    "Name": "Грунтовка глибокого проникнення 10л",
+    "Unit": "шт",
+    "Quantity": 30,
+    "Note": null
+  },
+  {
+    "Id": "P-011",
+    "Sku": "SKU-011",
+    "Name": "Фарба фасадна акрилова 14кг",
+    "Unit": "шт",
+    "Quantity": 9,
+    "Note": null
+  },
+  {
+    "Id": "P-012",
+    "Sku": "SKU-012",
+    "Name": "Шпаклівка фінішна 20кг",
+    "Unit": "шт",
+    "Quantity": 60,
+    "Note": null
+  },
+  {
+    "Id": "P-013",
+    "Sku": "SKU-013",
+    "Name": "Мінеральна вата 100мм",
+    "Unit": "м2",
+    "Quantity": 150,
+    "Note": null
+  },
+  {
+    "Id": "P-014",
+    "Sku": "SKU-014",
+    "Name": "Гіпсокартон вологостійкий 12.5мм",
+    "Unit": "лист",
+    "Quantity": 85,
+    "Note": null
+  },
+  {
+    "Id": "P-015",
+    "Sku": "SKU-015",
+    "Name": "Профіль для гіпсокартону CD-60 3м",
+    "Unit": "шт",
+    "Quantity": 140,
+    "Note": null
+  },
+  {
+    "Id": "P-016",
+    "Sku": "SKU-016",
+    "Name": "Саморізи по металу 3.5х25",
+    "Unit": "уп",
+    "Quantity": 55,
+    "Note": null
+  },
+  {
+    "Id": "P-017",
+    "Sku": "SKU-017",
+    "Name": "Труба поліпропіленова 20мм",
+    "Unit": "м",
+    "Quantity": 2,
+    "Note": null
+  },
+  {
+    "Id": "P-018",
+    "Sku": "SKU-018",
+    "Name": "Піна монтажна всесезонна 750мл",
+    "Unit": "шт",
+    "Quantity": 35,
     "Note": null
   }
 ]

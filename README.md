@@ -37,6 +37,7 @@
 └── CrossApp/
     ├── data/
     |   ├── catalog.json
+    |   ├── catalog-error.json
     |   ├── sample-correct.csv
     |   ├── sample.csv
     |   ├── sample.json
@@ -47,6 +48,7 @@
     │   │   └── Program.cs
     │   └── Core/
     |       ├── Abstractions/
+    |       |   ├── ICatalogImporter.cs
     |       |   ├── ICatalogStore.cs
     |       |   └── INotificationSink.cs
     │       ├── Domain/
@@ -80,10 +82,19 @@
     |       |   ├── CachingCatalogStore.cs
     |       |   ├── FileCatalogStore.cs
     |       |   ├── InMemoryCatalogStore.cs
+    |       |   ├── JsonCatalogImporter.cs
     │       │   └── StoreFactory.cs
     │       ├── Core.csproj
+    |       ├── DomainException.cs
     |       ├── EnviromentInfo.cs
     │       └── SampleData.cs
+    ├── tests/
+    |   └── Core.Tests/
+    |       ├── CatalogServiceTests.cs
+    |       ├── Core.Tests.csproj
+    |       ├── DataTests.cs
+    |       ├── ImportTests.cs
+    |       └── ReportServiceTests.cs
     ├── .gitignore
     ├── CrossApp.sln
     └── README.md
@@ -105,6 +116,16 @@
  # Для Linux/MacOs:
  ./src/Cli/bin/Release/net10.0/linux-x64/publish/Cli
  ```
+ ## Тестування
+ ```
+ dotnet test
+
+ # Перевірка скасувань:
+ - var dataPath = Path.Combine(Directory.GetCurrentDirectory(), "data", "non-existant.json");
+ - var dataPath = Path.Combine(Directory.GetCurrentDirectory(), "data", "catalog-error.json");
+ - cts.CancelAfter(TimeSpan.FromMilliseconds(2)); (перед блоком try)
+ ```
+ 
  ## Середовище
  .NET SDK 9.0, EndeavourOS Titan Nova x64 (Unix 7.2.3.1)
 

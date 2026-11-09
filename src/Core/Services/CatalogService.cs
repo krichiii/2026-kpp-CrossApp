@@ -24,6 +24,8 @@ public sealed class CatalogService(ICatalogStore store, INotificationSink? sink 
     }
     public void Receive(string id, int quantity)
     {
+        if (quantity <= 0)
+            throw new ArgumentException("Кількість приходу має бути більшою за нуль", nameof(quantity));
         var product = _store.GetById(id)
             ?? throw new InvalidOperationException($"Немає запису з id={id}.");
         product.RegisterArrival(quantity); // якщо верхній рядок кине виняток – події не буде
@@ -36,4 +38,21 @@ public sealed class CatalogService(ICatalogStore store, INotificationSink? sink 
         _store.List().Where(predicate).ToList();
     
     public IReadOnlyList<Product> All() => _store.List();
+
+    public async Task<int> ImportAsync(ICatalogImporter importer, string path, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var items = await importer.LoadAsync(path, ct);
+        var added = 0;
+        
+        foreach (var item in items)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (_store.GetById(item.Id) is not null) continue; // ідемпотентність імпорту
+            _store.Add(item);
+            OnChanged(item, CatalogChangeKind.Added, item.Quantity);
+            added++;
+        }
+        return added;
+    }
  }

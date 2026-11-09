@@ -9,7 +9,7 @@ public static class ReportService
         .Select(p => new StockLine(p.Sku, p.Name, p.Quantity, p.Unit))
         .ToList();
 
-    // 2) топ-N зі стабільним порядком (використання власного методу TopBy)
+    // 2) топ-N зі стабільним порядком
     public static IReadOnlyList<StockLine> TopByQuantity(IEnumerable<Product> source, int n) => 
         source.TopBy(p => p.Quantity, n)
         .Select(p => new StockLine(p.Sku, p.Name, p.Quantity, p.Unit))
