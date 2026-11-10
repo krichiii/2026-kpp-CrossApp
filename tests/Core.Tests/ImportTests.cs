@@ -67,9 +67,55 @@ public class ImportTests
         Assert.True(userCts.IsCancellationRequested, "Повинен спрацювати користувацький токен");
     }
 
+    [Fact]
+    public async Task ImportAsync_ReportsProgressToSubscriber()
+    {
+        var testProgress = new TestProgress();
+        var service = new CatalogService(new InMemoryCatalogStore());
+        var fakeImporter = new FakeCatalogImporter(
+        [
+            Product.Create("F-1", "SKU-F1", "Товар 1", "шт", 10),
+            Product.Create("F-2", "SKU-F2", "Товар 2", "шт", 20),
+            Product.Create("F-3", "SKU-F3", "Товар 3", "шт", 30),
+            Product.Create("F-4", "SKU-F4", "Товар 4", "шт", 40)
+        ]);
+
+        var added = await service.ImportAsync(fakeImporter, "any.json", progress: testProgress);
+
+        Assert.Equal(4, added);
+        Assert.NotEmpty(testProgress.Reports);
+        Assert.Equal(0, testProgress.Reports[0]);
+        Assert.Equal(100, testProgress.Reports[^1]);
+        Assert.True(testProgress.Reports.All(p => p >= 0 && p <= 100));
+    }
+
+    private sealed class TestProgress : IProgress<int>
+    {
+        public List<int> Reports { get; } = [];
+        public void Report(int value) => Reports.Add(value);
+    }
+
+    private sealed class FakeCatalogImporter(IReadOnlyList<Product> items) : ICatalogImporter
+    {
+        public Task<IReadOnlyList<Product>> LoadAsync(string path, CancellationToken ct = default, IProgress<int>? progress = null) =>
+            Task.FromResult(items);
+
+        public async IAsyncEnumerable<Product> LoadStreamAsync(
+            string path, 
+            [EnumeratorCancellation] CancellationToken ct = default,
+            IProgress<int>? progress = null)
+        {
+            foreach (var item in items)
+            {
+                yield return item;
+            }
+            await Task.CompletedTask;
+        }
+    }
+
     private sealed class DelayedCatalogImporter(int delayMs) : ICatalogImporter
     {
-        public async Task<IReadOnlyList<Product>> LoadAsync(string path, CancellationToken ct = default)
+        public async Task<IReadOnlyList<Product>> LoadAsync(string path, CancellationToken ct = default, IProgress<int>? progress = null)
         {
             await Task.Delay(delayMs, ct);
             return [];
@@ -77,7 +123,8 @@ public class ImportTests
 
         public async IAsyncEnumerable<Product> LoadStreamAsync(
             string path, 
-            [EnumeratorCancellation] CancellationToken ct = default)
+            [EnumeratorCancellation] CancellationToken ct = default,
+            IProgress<int>? progress = null)
         {
             await Task.Delay(delayMs, ct);
             yield break;

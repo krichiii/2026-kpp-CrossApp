@@ -43,10 +43,11 @@ public sealed class CatalogService(ICatalogStore store, INotificationSink? sink 
     public async IAsyncEnumerable<Product> ImportStreamAsync(
         ICatalogImporter importer, 
         string path, 
-        [EnumeratorCancellation] CancellationToken ct = default)
+        [EnumeratorCancellation] CancellationToken ct = default,
+        IProgress<int>? progress = null)
     {
         ct.ThrowIfCancellationRequested();
-        await foreach (var item in importer.LoadStreamAsync(path, ct).WithCancellation(ct))
+        await foreach (var item in importer.LoadStreamAsync(path, ct, progress).WithCancellation(ct))
         {
             if (_store.GetById(item.Id) is not null) continue; // ідемпотентність імпорту
             _store.Add(item);
@@ -55,13 +56,32 @@ public sealed class CatalogService(ICatalogStore store, INotificationSink? sink 
         }
     }
 
-    public async Task<int> ImportAsync(ICatalogImporter importer, string path, CancellationToken ct = default)
+    public async Task<int> ImportAsync(
+        ICatalogImporter importer, 
+        string path, 
+        CancellationToken ct = default,
+        IProgress<int>? progress = null)
     {
+        ct.ThrowIfCancellationRequested();
+        var items = await importer.LoadAsync(path, ct, progress);
         var added = 0;
-        await foreach (var _ in ImportStreamAsync(importer, path, ct).WithCancellation(ct))
+        progress?.Report(0);
+
+        for (var i = 0; i < items.Count; i++)
         {
-            added++;
+            ct.ThrowIfCancellationRequested();
+            var item = items[i];
+            if (_store.GetById(item.Id) is null)
+            {
+                _store.Add(item);
+                OnChanged(item, CatalogChangeKind.Added, item.Quantity);
+                added++;
+            }
+
+            var percent = items.Count > 0 ? (int)Math.Round((i + 1) * 100.0 / items.Count) : 100;
+            progress?.Report(percent);
         }
+
         return added;
     }
  }

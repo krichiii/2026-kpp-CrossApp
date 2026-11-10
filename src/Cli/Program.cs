@@ -24,10 +24,32 @@ using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 // Зв'язаний токен: об'єднує сигнал користувача (Ctrl+C) і автоматичний таймаут
 using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(userCts.Token, timeoutCts.Token);
 
+// Підписник на хід імпорту: виводить прогрес у відсотках
+var lastPercent = -1;
+var progress = new Progress<int>(percent =>
+{
+    if (percent <= lastPercent) return;
+    lastPercent = percent;
+    var barLength = 20;
+    var filled = percent * barLength / 100;
+    var bar = new string('=', filled) + (filled < barLength ? ">" + new string(' ', barLength - filled - 1) : "");
+    lock(ConsoleSink.ConsoleLock)
+    {
+        if (percent == 100)
+        {
+            Console.WriteLine($"\r[Прогрес: 100% [====================]]");
+        }
+        else
+        {
+            Console.Write($"\r[Прогрес: {percent,3}% [{bar,-20}]]");
+        }      
+    }
+});
+
 try
 {
     var added = 0;
-    await foreach (var item in service.ImportStreamAsync(new JsonCatalogImporter(), dataPath, linkedCts.Token))
+    await foreach (var item in service.ImportStreamAsync(new JsonCatalogImporter(), dataPath, linkedCts.Token, progress))
     {
         added++;
     }
