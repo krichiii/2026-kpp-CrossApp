@@ -123,7 +123,7 @@
  # Перевірка скасувань:
  - var dataPath = Path.Combine(Directory.GetCurrentDirectory(), "data", "non-existant.json");
  - var dataPath = Path.Combine(Directory.GetCurrentDirectory(), "data", "catalog-error.json");
- - cts.CancelAfter(TimeSpan.FromMilliseconds(2)); (перед блоком try)
+ - using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(5));
  ```
  
  ## Середовище
