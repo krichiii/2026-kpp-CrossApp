@@ -21,7 +21,11 @@ Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
  // для демонстрації таймауту: cts.CancelAfter(TimeSpan.FromMilliseconds(2));
 try
 {
-    var added = await service.ImportAsync(new JsonCatalogImporter(), dataPath, cts.Token);
+    var added = 0;
+    await foreach (var item in service.ImportStreamAsync(new JsonCatalogImporter(), dataPath, cts.Token))
+    {
+        added++;
+    }
     Console.WriteLine($"Імпортовано записів: {added}");
 }
 catch (OperationCanceledException) { Console.WriteLine("Імпорт скасовано."); }

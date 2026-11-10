@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Core.Domain;
 using Core.Abstractions;
 public sealed class CatalogService(ICatalogStore store, INotificationSink? sink = null)
@@ -39,18 +40,26 @@ public sealed class CatalogService(ICatalogStore store, INotificationSink? sink 
     
     public IReadOnlyList<Product> All() => _store.List();
 
-    public async Task<int> ImportAsync(ICatalogImporter importer, string path, CancellationToken ct = default)
+    public async IAsyncEnumerable<Product> ImportStreamAsync(
+        ICatalogImporter importer, 
+        string path, 
+        [EnumeratorCancellation] CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        var items = await importer.LoadAsync(path, ct);
-        var added = 0;
-        
-        foreach (var item in items)
+        await foreach (var item in importer.LoadStreamAsync(path, ct).WithCancellation(ct))
         {
-            ct.ThrowIfCancellationRequested();
             if (_store.GetById(item.Id) is not null) continue; // ідемпотентність імпорту
             _store.Add(item);
             OnChanged(item, CatalogChangeKind.Added, item.Quantity);
+            yield return item;
+        }
+    }
+
+    public async Task<int> ImportAsync(ICatalogImporter importer, string path, CancellationToken ct = default)
+    {
+        var added = 0;
+        await foreach (var _ in ImportStreamAsync(importer, path, ct).WithCancellation(ct))
+        {
             added++;
         }
         return added;
