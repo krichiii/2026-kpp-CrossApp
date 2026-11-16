@@ -33,12 +33,6 @@ public sealed class CatalogService(ICatalogStore store, INotificationSink? sink 
         _store.Update(product);
         OnChanged(product, CatalogChangeKind.Received, quantity);
     }
- // поруч із Find(string id) з тижня 5: тут критерій задає той, хто викликає
-    public IReadOnlyList<Product> Find(Func<Product, bool> predicate) => _store.Find(predicate);
-    public IReadOnlyList<Product> FindAll(Func<Product, bool> predicate) =>
-        _store.List().Where(predicate).ToList();
-    
-    public IReadOnlyList<Product> All() => _store.List();
 
     public async IAsyncEnumerable<Product> ImportStreamAsync(
         ICatalogImporter importer, 

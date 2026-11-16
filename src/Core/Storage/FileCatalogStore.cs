@@ -1,31 +1,64 @@
-using Core.Domain;
-using Core.Abstractions;
+namespace Core.Storage;
+
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using Core.Abstractions;
+using Core.Configuration;
+using Core.Domain;
 using Core.Dto;
 
-public sealed class FileCatalogStore(string path) : ICatalogStore
+public sealed class FileCatalogStore : ICatalogStore
 {
-    private static readonly JsonSerializerOptions Options = new() { WriteIndented = true };
+    private static readonly JsonSerializerOptions Options = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
     private readonly Dictionary<string, Product> _cache = new(StringComparer.OrdinalIgnoreCase);
-    private readonly string _path = Path.GetFullPath(path);
+    private readonly string _path;
     private bool _loaded;
-    
+
+    public FileCatalogStore(string path)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        _path = Path.GetFullPath(path);
+    }
+
+    public FileCatalogStore(StorageOptions options, string? baseDir = null)
+        : this(options.ResolveFullPath(baseDir ?? AppContext.BaseDirectory))
+    {
+    }
+
     private void EnsureLoaded()
     {
         if (_loaded) return;
-        if (File.Exists(_path))
+        if (!File.Exists(_path)) { _loaded = true; return; }
+        var dtos = JsonSerializer.Deserialize<List<ProductDto>>(
+            File.ReadAllText(_path), Options) ?? [];
+        _cache.Clear();
+        foreach (var dto in dtos)
         {
-            var dtos = JsonSerializer.Deserialize<List<ProductDto>>(File.ReadAllText(_path)) ?? [];
-            foreach (var dto in dtos) { var p = Product.FromDto(dto); _cache[p.Id] = p; }
+            var product = Product.FromDto(dto); // повторно перевіряє інваріанти
+            _cache[product.Id] = product;
         }
         _loaded = true;
     }
 
     private void Flush()
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
-        File.WriteAllText(_path,
-        JsonSerializer.Serialize(_cache.Values.Select(p => p.ToDto()).ToList(), Options));
+        var dtos = _cache.Values.OrderBy(p => p.Sku).Select(product => product.ToDto()).ToList();
+        var tmp = _path + ".tmp";
+        var dir = Path.GetDirectoryName(_path);
+        if (!string.IsNullOrEmpty(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+        File.WriteAllText(tmp, JsonSerializer.Serialize(dtos, Options));
+        File.Move(tmp, _path, overwrite: true);
     }
 
     public IReadOnlyList<Product> List()
@@ -60,6 +93,7 @@ public sealed class FileCatalogStore(string path) : ICatalogStore
 
     public void Update(Product item)
     {
+        ArgumentNullException.ThrowIfNull(item);
         EnsureLoaded();
         _cache[item.Id] = item;
         Flush();
@@ -72,4 +106,4 @@ public sealed class FileCatalogStore(string path) : ICatalogStore
         Flush();
         return true;
     }
- }
+}

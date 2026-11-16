@@ -1,10 +1,10 @@
 # CrossApp
- Наскрізний проєкт з крос-платформного програмування.
- 
- **Предметна область**: Склад
- 
- **Сутності**: Product (товар), StockBatch (партія), Warehouse (склад), Movement (переміщення). 
- 
+Наскрізний проєкт з крос-платформного програмування.
+
+**Предметна область**: Склад
+
+**Сутності**: Product (товар), StockBatch (партія), Warehouse (склад), Movement (переміщення). 
+
 **Призначення**: облік залишків товарів по партіях
 
 **Сервіс**: CatalogService.cs
@@ -14,9 +14,94 @@
 **Реалізації**:
 - FileCatalogStore.cs
 - InMemoryCatalogStore.cs
-- CachingCatalogStore.cs (додаткове завдання 1[lab05])
 
- ## Таблиця розмірів публікацій (+ Додаткові завдання 1,2 [lab02] )
+## Конфігурація та параметри (Lab 09)
+
+Конфігурація будується як послідовність джерел (ConfigurationBuilder):
+1. `appsettings.json` — базові налаштування;
+2. `appsettings.{Environment}.json` — налаштування середовища (за замовчуванням `Development`);
+3. `UserSecrets` (локальні секрети розробника поза git-репозиторієм);
+4. Змінні середовища з префіксом `CROSSAPP_` (перекривають значення з файлів);
+5. Спеціальна змінна середовища `CROSSAPP_DATA_PATH` (перекриває `Storage:DataPath`);
+6. Аргументи командного рядка (`AddCommandLine(args)`).
+
+### Профілі середовища
+- **Development** (`appsettings.Development.json`): рівень логування `Debug`, детальне виведення.
+- **Production** (`appsettings.json`): рівень логування `Information`.
+Перемикання профілю здійснюється через змінну оточення `CROSSAPP_ENVIRONMENT` (наприклад, `CROSSAPP_ENVIRONMENT=Production`).
+
+### Таблиця ключів конфігурації
+
+| Ключ конфігурації | JSON-файл | Змінна середовища | Опис | Значення за замовчуванням |
+| :--- | :--- | :--- | :--- | :--- |
+| `EnvironmentName` | `appsettings.json` | `CROSSAPP_EnvironmentName` / `CROSSAPP_ENVIRONMENT` | Назва середовища | `Development` |
+| `Logging:MinimumLevel` | `appsettings.json` / `appsettings.Development.json` | `CROSSAPP_Logging__MinimumLevel` | Мінімальний рівень логування | `Information` (Prod) / `Debug` (Dev) |
+| `Storage:DataPath` | `appsettings.json` | `CROSSAPP_Storage__DataPath` або `CROSSAPP_DATA_PATH` | Каталог для збереження файлу даних | `data` |
+| `Storage:FileName` | `appsettings.json` | `CROSSAPP_Storage__FileName` | Назва файлу даних | `items.json` |
+| `Integration:ApiKey` | `secrets.json` (User Secrets) | `CROSSAPP_Integration__ApiKey` | Секретний ключ інтеграції (не зберігається в git) | `local-dev-key` |
+
+### Робота з User Secrets
+
+Ініціалізація та налаштування секрету для локальної розробки:
+```bash
+# Ініціалізація сховища секретів (додає UserSecretsId у Cli.csproj)
+dotnet user-secrets init --project src/Cli
+
+# Встановлення ключа
+dotnet user-secrets set "Integration:ApiKey" "local-dev-key" --project src/Cli
+
+# Перегляд наявних секретів
+dotnet user-secrets list --project src/Cli
+```
+
+### Приклади перевизначення параметрів
+
+#### PowerShell (Windows):
+```powershell
+# Зміна каталогу даних через спеціальну змінну:
+$env:CROSSAPP_DATA_PATH = "C:\Users\User\data"
+dotnet run --project src/Cli -- export
+
+# Зміна назви файлу даних через префіксну змінну (подвійне підкреслення замість ':'):
+$env:CROSSAPP_Storage__FileName = "custom-items.json"
+dotnet run --project src/Cli
+
+# Зміна середовища:
+$env:CROSSAPP_ENVIRONMENT = "Production"
+dotnet run --project src/Cli
+
+# Задання API-ключа через змінну середовища (наприклад, для CI):
+$env:CROSSAPP_Integration__ApiKey = "prod-super-secret-key"
+dotnet run --project src/Cli
+
+# Очищення змінних:
+Remove-Item Env:\CROSSAPP_DATA_PATH
+Remove-Item Env:\CROSSAPP_Storage__FileName
+Remove-Item Env:\CROSSAPP_ENVIRONMENT
+Remove-Item Env:\CROSSAPP_Integration__ApiKey
+```
+
+#### Bash (Linux / macOS):
+```bash
+# Зміна каталогу даних через спеціальну змінну:
+CROSSAPP_DATA_PATH=/tmp/data dotnet run --project src/Cli -- export
+
+# Зміна назви файлу даних:
+CROSSAPP_Storage__FileName=custom-items.json dotnet run --project src/Cli
+
+# Перевизначення середовища:
+CROSSAPP_ENVIRONMENT=Production dotnet run --project src/Cli
+
+# Задання API-ключа через змінну оточення:
+CROSSAPP_Integration__ApiKey=ci-api-key dotnet run --project src/Cli
+```
+
+#### Аргументи командного рядка:
+```
+dotnet run --project src/Cli -- --Storage:DataPath=custom_data --Storage:FileName=items_cli.json
+```
+
+## Таблиця розмірів публікацій (+ Додаткові завдання 1,2 [lab02] )
 
 | RID | Режим | Додаткові режими Publish | Розмір publish | К-сть файлів | Потрібен runtime |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -35,15 +120,10 @@
 ```
 .
 └── CrossApp/
-    ├── data/
-    |   ├── catalog.json
-    |   ├── catalog-error.json
-    |   ├── sample-correct.csv
-    |   ├── sample.csv
-    |   ├── sample.json
-    |   └── sample-correct.json
     ├── src/
     │   ├── Cli/
+    │   │   ├── appsettings.json
+    │   │   ├── appsettings.Development.json
     │   │   ├── Cli.csproj
     │   │   └── Program.cs
     │   └── Core/
@@ -51,29 +131,21 @@
     |       |   ├── ICatalogImporter.cs
     |       |   ├── ICatalogStore.cs
     |       |   └── INotificationSink.cs
+    |       ├── Configuration/
+    |       |   └── AppOptions.cs 
     │       ├── Domain/
-    │       │   ├── Order.cs
-    │       │   ├── OrderStatus.cs
     │       │   └── Product.cs
     │       ├── Dto/
-    │       │   ├── MixedImportResult.cs
-    |       |   ├── ProductDto.cs
-    |       |   └── WarehouseDto.cs
+    |       |   └── ProductDto.cs
     |       ├── Events/
     |       |   ├── CatalogChangedEventArgs.cs
     |       |   └── CatalogChangeKind.cs
-    |       ├── Import/
-    |       |   ├── ProductCsvImporter.cs
-    |       |   └── ProductJsonImporter.cs
     |       ├── Notifications/
     |       |   ├── CompositeNotificationSink.cs
     |       |   ├── ConsoleSink.cs
     |       |   └── FileSink.cs
     |       ├── Reports/
     |       |   ├── EnumerableExtensions.cs
-    |       |   ├── GroupSummary.cs
-    |       |   ├── ProductMovementDetail.cs
-    |       |   ├── ProductMovementSummary.cs
     |       |   ├── ReportService.cs
     |       |   └── StockLine.cs
     |       ├── Services/
@@ -82,12 +154,9 @@
     |       |   ├── CachingCatalogStore.cs
     |       |   ├── FileCatalogStore.cs
     |       |   ├── InMemoryCatalogStore.cs
-    |       |   ├── JsonCatalogImporter.cs
-    │       │   └── StoreFactory.cs
+    │       │   └── JsonCatalogImporter.cs
     │       ├── Core.csproj
-    |       ├── DomainException.cs
-    |       ├── EnviromentInfo.cs
-    │       └── SampleData.cs
+    │       └── DomainException.cs
     ├── tests/
     |   └── Core.Tests/
     |       ├── CatalogServiceTests.cs
@@ -100,14 +169,13 @@
     └── README.md
 ```
 
-
  ## Запуск
- ```
+ ```bash
  dotnet build
- dotnet run --project src/Cli
+ dotnet run --project src/Cli -- export
  ```
  ### або
- ```
+ ```bash
  dotnet publish src/Cli -c Release -r <platform> --self-contained true
 
  # Для Windows:
@@ -117,7 +185,7 @@
  ./src/Cli/bin/Release/net10.0/linux-x64/publish/Cli
  ```
  ## Тестування
- ```
+ ```bash
  dotnet test
 
  # Перевірка скасувань:

@@ -1,67 +1,52 @@
-using Core.Abstractions;
-using Core.Notifications;
+using System.Reflection;
+using Core.Configuration;
+using Core.Storage;
+using Microsoft.Extensions.Configuration;
 
-var logPath = Path.Combine(Directory.GetCurrentDirectory(), "logs", "app.log");
-var dataPath = Path.Combine(Directory.GetCurrentDirectory(), "data", "catalog.json");
-// var dataPath = Path.Combine(Directory.GetCurrentDirectory(), "data", "non-existant.json");
-// var dataPath = Path.Combine(Directory.GetCurrentDirectory(), "data", "catalog-error.json");
+var envName = Environment.GetEnvironmentVariable("CROSSAPP_ENVIRONMENT") ?? "Development";
 
-INotificationSink sink = new CompositeNotificationSink(
-    new ConsoleSink(),
-    new FileSink(logPath)
-);
+var config = new ConfigurationBuilder()
+    .SetBasePath(AppContext.BaseDirectory)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+    .AddJsonFile($"appsettings.{envName}.json", optional: true)
+    .AddUserSecrets(Assembly.GetExecutingAssembly(), optional: true)
+    .AddEnvironmentVariables(prefix: "CROSSAPP_")
+    .AddCommandLine(args)
+    .Build();
 
-ICatalogStore store = StoreFactory.Create(args);
-var service = new CatalogService(store, sink);
+var options = config.Get<AppOptions>() ?? new AppOptions();
 
-using var userCts = new CancellationTokenSource();
-Console.CancelKeyPress += (_, e) => { e.Cancel = true; userCts.Cancel(); };
-
-// Таймаут для тривалих операцій (наприклад, 5 секунд або менше для тесту)
-using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-// using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(5));
-
-// Зв'язаний токен: об'єднує сигнал користувача (Ctrl+C) і автоматичний таймаут
-using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(userCts.Token, timeoutCts.Token);
-
-// Підписник на хід імпорту: виводить прогрес у відсотках
-var lastPercent = -1;
-var progress = new Progress<int>(percent =>
+var legacy = Environment.GetEnvironmentVariable("CROSSAPP_DATA_PATH");
+var storage = new StorageOptions
 {
-    if (percent <= lastPercent) return;
-    lastPercent = percent;
-    var barLength = 20;
-    var filled = percent * barLength / 100;
-    var bar = new string('=', filled) + (filled < barLength ? ">" + new string(' ', barLength - filled - 1) : "");
-    lock(ConsoleSink.ConsoleLock)
+    // проста змінна CROSSAPP_DATA_PATH перекриває розділ Storage
+    DataPath = string.IsNullOrWhiteSpace(legacy) ? options.Storage.DataPath : legacy,
+    FileName = options.Storage.FileName
+};
+
+var resolvedPath = storage.ResolveFullPath(AppContext.BaseDirectory);
+var apiKey = config["Integration:ApiKey"];
+
+Console.WriteLine($"Файл даних : {resolvedPath}");
+Console.WriteLine(apiKey is null ? "ApiKey: не заданий" : $"ApiKey: присутній, довжина {apiKey.Length}");
+
+var store = new FileCatalogStore(storage, AppContext.BaseDirectory);
+var service = new CatalogService(store);
+
+if (args.Contains("export", StringComparer.OrdinalIgnoreCase) || args.Contains("--export", StringComparer.OrdinalIgnoreCase))
+{
+    foreach (var item in store.List())
     {
-        if (percent == 100)
-        {
-            Console.WriteLine($"\r[Прогрес: 100% [====================]]");
-        }
-        else
-        {
-            Console.Write($"\r[Прогрес: {percent,3}% [{bar,-20}]]");
-        }      
+        store.Remove(item.Id);
     }
-});
 
-try
-{
-    var added = 0;
-    await foreach (var item in service.ImportStreamAsync(new JsonCatalogImporter(), dataPath, linkedCts.Token, progress))
-    {
-        added++;
-    }
-    Console.WriteLine($"Імпортовано записів: {added}");
+    service.Add("A-100", "Цемент М400", "мішок", 40);
+    service.Add("A-200", "Пісок будівельний", "т", 25);
+    service.Add("A-300", "Цегла червона", "шт", 1500);
+
+    Console.WriteLine($"Експортовано 3 записи.");
 }
-catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+else
 {
-    Console.WriteLine("Імпорт перервано за таймаутом.");
+    Console.WriteLine($"Записів у сховищі: {store.List().Count}");
 }
-catch (OperationCanceledException)
-{
-    Console.WriteLine("Імпорт скасовано користувачем.");
-}
-catch (DomainException ex) { Console.WriteLine($"Дані відхилено: {ex.Message}"); }
-catch (FileNotFoundException) { Console.WriteLine($"Файл не знайдено: {dataPath}"); }

@@ -12,11 +12,6 @@ public sealed class CompositeNotificationSink : INotificationSink
         _sinks = sinks.ToList();
     }
 
-    public CompositeNotificationSink(params INotificationSink[] sinks)
-        : this((IEnumerable<INotificationSink>)sinks)
-    {
-    }
-
     public void Notify(CatalogChangedEventArgs args)
     {
         ArgumentNullException.ThrowIfNull(args);

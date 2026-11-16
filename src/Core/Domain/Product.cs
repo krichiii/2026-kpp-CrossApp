@@ -35,18 +35,9 @@
             throw new ArgumentOutOfRangeException(nameof(amount), amount,   "Кількість приходу має бути більшою за нуль");
         _quantity += amount;
     }
-    public void Issue(int amount)  {
-        if (amount <= 0)
-            throw new ArgumentOutOfRangeException(nameof(amount), amount, "Кількість видачі має бути більшою за нуль");
-        if (amount > _quantity)
-            throw new InvalidOperationException($"Не можна видати {amount}: залишок {Sku} = {_quantity}");
-        
-        _quantity -= amount;
-     }
     // Мапінг у формат тижня 3 і назад — знадобиться сховищу тижня 5.
     public ProductDto ToDto() => new(Id, Sku, Name, Unit, Quantity);
     public static Product FromDto(ProductDto dto) =>
         Create(dto.Id, dto.Sku, dto.Name, dto.Unit, dto.Quantity);
 
-    public override string ToString() => $"{Id} [{Sku}] {Name} — {Quantity} {Unit}";
  }
