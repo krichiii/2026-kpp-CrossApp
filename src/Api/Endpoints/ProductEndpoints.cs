@@ -12,8 +12,26 @@ public static class ProductEndpoints
     {
         var group = app.MapGroup("/api/products").WithTags("Products");
 
-        group.MapGet("/", (ICatalogStore store) =>
-            TypedResults.Ok(store.List().Select(p => p.ToDto()).ToList()));
+        group.MapGet("/", (ICatalogStore store, int page = 1, int pageSize = 20, string? search = null) =>
+        {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var filtered = string.IsNullOrWhiteSpace(search)
+                ? store.List()
+                : store.Find(p =>
+                    p.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    p.Sku.Contains(search, StringComparison.OrdinalIgnoreCase));
+
+            var total = filtered.Count;
+            var items = filtered
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(p => p.ToDto())
+                .ToList();
+
+            return TypedResults.Ok(new PagedResult<ProductDto>(items, total));
+        });
 
         group.MapGet("/{id}", Results<Ok<ProductDto>, NotFound> 
             (string id, ICatalogStore store) =>

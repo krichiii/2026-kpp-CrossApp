@@ -123,6 +123,7 @@ dotnet run --project src/Cli -- --Storage:DataPath=custom_data --Storage:FileNam
     ├── src/
     │   ├── Api/
     │   │   ├── Contracts/
+    |   |   |   ├── PagedResult.cs
     │   │   │   └── SaveProductRequest.cs
     │   │   ├── Endpoints/
     │   │   │   └── ProductEndpoints.cs

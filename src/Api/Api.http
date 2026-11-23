@@ -11,8 +11,12 @@ Accept: application/json
 # Scalar UI документація (v1)
 GET {{Api_HostAddress}}/scalar/v1
 
-# Отримати всі товари (List)
+# Отримати товари з пагінацією (за замовчуванням: page=1, pageSize=20)
 GET {{Api_HostAddress}}/api/products
+Accept: application/json
+
+### Отримати товари з пагінацією та пошуком
+GET {{Api_HostAddress}}/api/products?page=1&pageSize=10&search=Кабель
 Accept: application/json
 
 # Створити новий товар (Create - POST)
