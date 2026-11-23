@@ -121,6 +121,18 @@ dotnet run --project src/Cli -- --Storage:DataPath=custom_data --Storage:FileNam
 .
 └── CrossApp/
     ├── src/
+    │   ├── Api/
+    │   │   ├── Contracts/
+    │   │   │   └── SaveProductRequest.cs
+    │   │   ├── Endpoints/
+    │   │   │   └── ProductEndpoints.cs
+    │   │   ├── Properties/
+    │   │   │   └── launchSettings.json
+    │   │   ├── Api.csproj
+    │   │   ├── Api.http
+    │   │   ├── appsettings.json
+    │   │   ├── appsettings.Development.json
+    │   │   └── Program.cs
     │   ├── Cli/
     │   │   ├── appsettings.json
     │   │   ├── appsettings.Development.json
@@ -193,7 +205,15 @@ dotnet run --project src/Cli -- --Storage:DataPath=custom_data --Storage:FileNam
  - var dataPath = Path.Combine(Directory.GetCurrentDirectory(), "data", "catalog-error.json");
  - using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(5));
  ```
- 
+ ## Запуск API
+
+ ```bash
+ # Запуск через профіль http (порт 5115):
+ dotnet run --project src/Api --launch-profile http
+
+ # Або з явним прапорцем --urls:
+ dotnet run --project src/Api --urls "http://localhost:5115"
+ ```
  ## Середовище
  .NET SDK 9.0, EndeavourOS Titan Nova x64 (Unix 7.2.3.1)
 
