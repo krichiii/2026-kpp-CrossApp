@@ -61,6 +61,10 @@ Content-Type: application/json
   "quantity": -10
 }
 
-# Перевірка винятку без stack trace для клієнта (500 ProblemDetails)
+# Перевірка DomainException -> 409 Conflict
+GET {{Api_HostAddress}}/throw-domain
+Accept: application/json
+
+# Перевірка звичайного винятку без stack trace для клієнта (500 ProblemDetails)
 GET {{Api_HostAddress}}/throw
 Accept: application/json

@@ -42,6 +42,11 @@ public static class ProductEndpoints
 
         group.MapPost("/", (SaveProductRequest request, ICatalogStore store) =>
             {
+                if (store.Find(p => p.Sku.Equals(request.Sku, StringComparison.OrdinalIgnoreCase)).Count > 0)
+                {
+                    throw new DomainException($"Товар з артикулом '{request.Sku}' вже існує.");
+                }
+
                 var id = Convert.ToHexString(RandomNumberGenerator.GetBytes(4)).ToLowerInvariant();
                 var created = Product.Create(id, request.Sku, request.Name, request.Unit, request.Quantity);
                 store.Add(created);
@@ -54,6 +59,12 @@ public static class ProductEndpoints
             {
                 if (store.GetById(id) is null)
                     return TypedResults.NotFound();
+
+                var duplicate = store.Find(p => p.Sku.Equals(request.Sku, StringComparison.OrdinalIgnoreCase) && !p.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+                if (duplicate.Count > 0)
+                {
+                    throw new DomainException($"Товар з артикулом '{request.Sku}' вже існує.");
+                }
 
                 // PUT замінює стан: get-only поля не мутуємо, створюємо валідний Product з тим самим id.
                 var replacement = Product.Create(id, request.Sku, request.Name, request.Unit, request.Quantity);
