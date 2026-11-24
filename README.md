@@ -177,6 +177,9 @@ dotnet run --project src/Cli -- --Storage:DataPath=custom_data --Storage:FileNam
     │       ├── Core.csproj
     │       └── DomainException.cs
     ├── tests/
+    |   ├── Api.Tests/
+    |   |   ├── Api.Tests.csproj
+    |   |   └── ProductApiTests.cs
     |   └── Core.Tests/
     |       ├── CatalogServiceTests.cs
     |       ├── Core.Tests.csproj

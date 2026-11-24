@@ -11,7 +11,23 @@ public static class ProductEndpoints
 {
     public static void MapProducts(this WebApplication app)
     {
-        var group = app.MapGroup("/api/products").WithTags("Products");
+        var group = app.MapGroup("/api/products")
+            .WithTags("Products")
+            .AddEndpointFilter(async (context, next) =>
+            {
+                try
+                {
+                    return await next(context);
+                }
+                catch (DomainException ex)
+                {
+                    return TypedResults.Problem(
+                        statusCode: StatusCodes.Status409Conflict,
+                        title: "Conflict",
+                        detail: ex.Message,
+                        type: "https://tools.ietf.org/html/rfc9110#section-15.5.10");
+                }
+            });
 
         group.MapGet("/", (ICatalogStore store, int page = 1, int pageSize = 20, string? search = null) =>
         {
