@@ -129,6 +129,8 @@ dotnet run --project src/Cli -- --Storage:DataPath=custom_data --Storage:FileNam
     │   │   │   └── ProductEndpoints.cs
     │   │   ├── Properties/
     │   │   │   └── launchSettings.json
+    |   |   ├── Validation/
+    |   |   |   └── SaveProductRequestValidator.cs
     │   │   ├── Api.csproj
     │   │   ├── Api.http
     │   │   ├── appsettings.json

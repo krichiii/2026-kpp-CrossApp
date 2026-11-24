@@ -1,6 +1,6 @@
 using Api.Endpoints;
 using Core.Abstractions;
-using Core.Storage;
+using FluentValidation;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails(); // формат помилок RFC 9457
 builder.Services.AddSingleton<ICatalogStore, InMemoryCatalogStore>();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 var app = builder.Build();
 app.UseExceptionHandler(); 
