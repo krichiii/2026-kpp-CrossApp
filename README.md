@@ -14,6 +14,7 @@
 **Реалізації**:
 - FileCatalogStore.cs
 - InMemoryCatalogStore.cs
+- EfCatalogStore.cs (EF Core / SQLite)
 
 ## Конфігурація та параметри (Lab 09)
 
@@ -38,6 +39,7 @@
 | `Logging:MinimumLevel` | `appsettings.json` / `appsettings.Development.json` | `CROSSAPP_Logging__MinimumLevel` | Мінімальний рівень логування | `Information` (Prod) / `Debug` (Dev) |
 | `Storage:DataPath` | `appsettings.json` | `CROSSAPP_Storage__DataPath` або `CROSSAPP_DATA_PATH` | Каталог для збереження файлу даних | `data` |
 | `Storage:FileName` | `appsettings.json` | `CROSSAPP_Storage__FileName` | Назва файлу даних | `items.json` |
+| `ConnectionStrings:AppDb` | `appsettings.json` | `ConnectionStrings__AppDb` | Рядок підключення до бази даних SQLite | `Data Source=data/app.db` |
 | `Integration:ApiKey` | `secrets.json` (User Secrets) | `CROSSAPP_Integration__ApiKey` | Секретний ключ інтеграції (не зберігається в git) | `local-dev-key` |
 
 ### Робота з User Secrets
@@ -145,37 +147,46 @@ dotnet run --project src/Cli -- --Storage:DataPath=custom_data --Storage:FileNam
     │   │   ├── appsettings.Development.json
     │   │   ├── Cli.csproj
     │   │   └── Program.cs
-    │   └── Core/
-    |       ├── Abstractions/
-    |       |   ├── ICatalogImporter.cs
-    |       |   ├── ICatalogStore.cs
-    |       |   └── INotificationSink.cs
-    |       ├── Configuration/
-    |       |   └── AppOptions.cs 
-    │       ├── Domain/
-    │       │   └── Product.cs
-    │       ├── Dto/
-    |       |   └── ProductDto.cs
-    |       ├── Events/
-    |       |   ├── CatalogChangedEventArgs.cs
-    |       |   └── CatalogChangeKind.cs
-    |       ├── Notifications/
-    |       |   ├── CompositeNotificationSink.cs
-    |       |   ├── ConsoleSink.cs
-    |       |   └── FileSink.cs
-    |       ├── Reports/
-    |       |   ├── EnumerableExtensions.cs
-    |       |   ├── ReportService.cs
-    |       |   └── StockLine.cs
-    |       ├── Services/
-    |       |   └── CatalogService.cs
-    │       ├── Storage/
-    |       |   ├── CachingCatalogStore.cs
-    |       |   ├── FileCatalogStore.cs
-    |       |   ├── InMemoryCatalogStore.cs
-    │       │   └── JsonCatalogImporter.cs
-    │       ├── Core.csproj
-    │       └── DomainException.cs
+    │   ├── Core/
+    |   |   ├── Abstractions/
+    |   |   |   ├── ICatalogImporter.cs
+    |   |   |   ├── ICatalogStore.cs
+    |   |   |   └── INotificationSink.cs
+    |   |   ├── Configuration/
+    |   |   |   └── AppOptions.cs 
+    │   |   ├── Domain/
+    │   |   │   └── Product.cs
+    │   |   ├── Dto/
+    |   |   |   └── ProductDto.cs
+    |   |   ├── Events/
+    |   |   |   ├── CatalogChangedEventArgs.cs
+    |   |   |   └── CatalogChangeKind.cs
+    |   |   ├── Notifications/
+    |   |   |   ├── CompositeNotificationSink.cs
+    |   |   |   ├── ConsoleSink.cs
+    |   |   |   └── FileSink.cs
+    |   |   ├── Reports/
+    |   |   |   ├── EnumerableExtensions.cs
+    |   |   |   ├── ReportService.cs
+    |   |   |   └── StockLine.cs
+    |   |   ├── Services/
+    |   |   |   └── CatalogService.cs
+    │   |   ├── Storage/
+    |   |   |   ├── CachingCatalogStore.cs
+    |   |   |   ├── FileCatalogStore.cs
+    |   |   |   ├── InMemoryCatalogStore.cs
+    │   |   │   └── JsonCatalogImporter.cs
+    │   |   ├── Core.csproj
+    │   |   └── DomainException.cs
+    │   └── Infrastructure/
+    │       ├── Migrations/
+    |       |   └── .gitkeep
+    │       ├── Persistence/
+    │       │   ├── AppDbContext.cs
+    │       │   ├── BatchRow.cs
+    │       │   └── ProductRow.cs
+    │       ├── EfCatalogStore.cs
+    │       └── Infrastructure.csproj
     ├── tests/
     |   ├── Api.Tests/
     |   |   ├── Api.Tests.csproj
@@ -224,6 +235,46 @@ dotnet run --project src/Cli -- --Storage:DataPath=custom_data --Storage:FileNam
  # Або з явним прапорцем --urls:
  dotnet run --project src/Api --urls "http://localhost:5115"
  ```
+
+ ## Рядок підключення (`ConnectionStrings:AppDb`)
+
+ Конфігурація підключення зберігається за ключем `ConnectionStrings:AppDb` у файлі [appsettings.json]:
+ ```json
+ {
+   "ConnectionStrings": {
+     "AppDb": "Data Source=data/app.db"
+   }
+ }
+ ```
+
+ ## Команди міграцій (`dotnet-ef`)
+    ```bash
+    dotnet ef migrations add <MigrationName> --project src/Infrastructure --startup-project src/Api // Створення нової міграції
+
+    dotnet ef database update --project src/Infrastructure --startup-project src/Api // Застосування міграцій до бази даних
+
+    dotnet ef migrations list --project src/Infrastructure --startup-project src/Api // Перегляд списку міграцій
+
+    dotnet ef migrations remove --project src/Infrastructure --startup-project src/Api // Видалення останньої міграції (тільки якщо вона ще не була застосована до бази даних) 
+    
+    ```
+
+ ## Як скинути базу даних (Reset / Drop DB)
+
+ ```bash
+ dotnet ef database drop --project src/Infrastructure --startup-project src/Api --force 
+ ```
+ або
+
+- **PowerShell (Windows)**:
+   ```powershell
+   Remove-Item src/Api/data/app.db*
+   ```
+ - **Bash (Linux / macOS)**:
+   ```bash
+   rm -f src/Api/data/app.db*
+   ```
+
  ## Середовище
  .NET SDK 9.0, EndeavourOS Titan Nova x64 (Unix 7.2.3.1)
 
